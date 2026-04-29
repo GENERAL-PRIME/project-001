@@ -82,8 +82,8 @@ Because the AI stores its learned traffic patterns directly inside the map's dat
   1. Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
   2. Click **EXPORT** in the UI and save your map as `traffic_map_backup.json` in your project folder.
   3. Open your terminal in that folder and run the cleaning script:
-     \`\`\`bash
+     ```bash
      node clean_map.js
-     \`\`\`
+     ```
   4. The script will safely strip out all `historicalVolume`, timers, and phase schedules, generating a new file called `traffic_map_clean.json`.
   5. Click **IMPORT** in the UI and upload `traffic_map_clean.json`. Your roads and properties will load perfectly, but the AI will begin learning from scratch!
