@@ -1,0 +1,156 @@
+/* ---------- GLOBAL ---------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+/* ---------- TOOLBAR ---------- */
+#toolbar {
+  width: 260px;
+  background: #1e1e2f;
+  color: #ffffff;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-right: 2px solid #2c2c3a;
+}
+
+#toolbar h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  text-align: center;
+  color: #00d4ff;
+}
+
+/* ---------- BUTTONS ---------- */
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #2f2f45;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+button:hover {
+  background: #00d4ff;
+  color: #000;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* ---------- PROPERTIES PANEL ---------- */
+#properties {
+  margin-top: 15px;
+  padding: 10px;
+  background: #2a2a3d;
+  border-radius: 8px;
+  max-height: 60vh; /* prevents infinite growth */
+  overflow-y: auto;
+}
+
+#properties h3 {
+  margin-top: 0;
+  font-size: 16px;
+  color: #00d4ff;
+}
+
+/* ---------- FORM ELEMENTS ---------- */
+label {
+  font-size: 12px;
+  color: #bbb;
+  display: block;
+  margin-top: 8px;
+}
+
+input,
+select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  background: #3a3a55;
+  color: white;
+}
+
+input:focus,
+select:focus {
+  background: #4a4a6a;
+}
+
+/* ---------- CANVAS ---------- */
+canvas {
+  flex: 1;
+  background: linear-gradient(135deg, #e8ecf1, #dfe6ee);
+  cursor: crosshair;
+}
+
+/* ---------- SCROLLBAR (optional polish) ---------- */
+#toolbar {
+  width: 320px; /* was 260px → increase as needed */
+  background: #1e1e2f;
+  color: #ffffff;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100vh;
+  overflow-y: auto;
+
+  border-right: 2px solid #2c2c3a;
+}
+
+#toolbar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.col {
+  background: #3a3a55;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.laneBox {
+  background: #444;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr auto; /* better layout */
+  gap: 5px;
+  align-items: center;
+}
+
+.laneBox b {
+  grid-column: span 3;
+  font-size: 12px;
+}

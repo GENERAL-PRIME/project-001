@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Traffic Graph Optimizer (Auto-Saving)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: 340px;
+            background: white;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1 1 45%;
+            padding: 10px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        button.active {
+            background: #0078d4;
+            color: white;
+            border-color: #005a9e;
+        }
+
+        button:hover:not(.active) {
+            background: #e1dfdf;
+        }
+
+        #mode-delete {
+            color: #d13438;
+            font-weight: bold;
+        }
+
+        #mode-delete.active {
+            background: #d13438;
+            color: white;
+            border-color: #a80000;
+        }
+
+        .sim-btn {
+            background: #107c10;
+            color: white;
+            border: none;
+            margin-top: 10px;
+            flex-basis: 100%;
+            font-weight: bold;
+        }
+
+        .clear-btn {
+            background: #fff;
+            color: #d13438;
+            border: 1px solid #d13438;
+            margin-top: 10px;
+            flex-basis: 100%;
+        }
+
+        .clear-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Property Inspector Styles */
+        #inspector {
+            flex-grow: 1;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .prop-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Dynamic Lane UI */
+        .lane-item {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .lane-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .lane-remove {
+            color: red;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: auto;
+            font-size: 0.8rem;
+        }
+
+        #add-lane-btn {
+            width: 100%;
+            background: #e1dfdf;
+            border: 1px dashed #999;
+            padding: 8px;
+            margin-top: 10px;
+        }
+
+        #cy {
+            flex-grow: 1;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <h2>Advanced Map Builder</h2>
+
+        <div class="toolbar">
+            <button id="mode-select" class="active">Select / Edit</button>
+            <button id="mode-node">Add Node</button>
+            <button id="mode-edge">Add Egde</button>
+            <button id="mode-delete">Delete</button>
+            <button id="run-sim" class="sim-btn">Run Pressure Sim</button>
+            <button id="btn-clear" class="clear-btn">Clear Map</button>
+        </div>
+
+        <div id="inspector">
+            <h3 id="inspector-title" style="margin-top:0; font-size:1.1rem;">Properties</h3>
+
+            <div id="node-props" style="display: none;">
+                <div class="prop-group">
+                    <label>Node ID</label>
+                    <input type="text" id="node-id" disabled>
+                </div>
+            </div>
+
+            <div id="edge-props" style="display: none;">
+                <p style="font-size:0.85rem; color:#666; margin-top:0;">Source: <span
+                        id="edge-source"></span><br>Target: <span id="edge-target"></span></p>
+                <div id="lanes-container"></div>
+                <button id="add-lane-btn">+ Add Lane</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cy"></div>
+
+    <script>
+        // --- 1. Graph Initialization ---
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            style: [
+                { selector: 'node', style: { 'background-color': '#4a4a4a', 'label': 'data(id)', 'color': '#333', 'text-valign': 'bottom', 'text-margin-y': 5, 'width': 30, 'height': 30 } },
+                { selector: 'edge', style: { 'width': 4, 'line-color': '#999', 'curve-style': 'bezier', 'label': 'data(label)', 'font-size': 12, 'text-rotation': 'none', 'text-background-color': '#fff', 'text-background-opacity': 0.8, 'text-background-padding': 2 } },
+                { selector: '.bottleneck', style: { 'background-color': '#d13438', 'border-width': 4, 'border-color': '#a80000', 'width': 40, 'height': 40 } },
+                { selector: ':selected', style: { 'border-width': 3, 'border-color': '#0078d4' } }
+            ]
+        });
+
+        let currentMode = 'select';
+        let sourceNode = null;
+        let selectedElement = null;
+        let nodeCounter = 1;
+
+        // --- LOCAL STORAGE: LOAD DATA ON STARTUP ---
+        function loadGraphState() {
+            const savedState = localStorage.getItem('trafficMapState');
+            if (savedState) {
+                cy.add(JSON.parse(savedState));
+
+                // Fix the node counter so new nodes don't overwrite loaded ones
+                let maxId = 0;
+                cy.nodes().forEach(n => {
+                    const parts = n.id().split('_');
+                    if (parts.length === 2) {
+                        const num = parseInt(parts[1]);
+                        if (num > maxId) maxId = num;
+                    }
+                });
+                nodeCounter = maxId + 1;
+            }
+        }
+
+        // --- LOCAL STORAGE: SAVE DATA ON CHANGES ---
+        function saveGraphState() {
+            // cy.elements().jsons() extracts all nodes, edges, properties, and X/Y coordinates
+            localStorage.setItem('trafficMapState', JSON.stringify(cy.elements().jsons()));
+        }
+
+        // Initialize Load
+        loadGraphState();
+
+        // Bind the save function to Cytoscape events (add, remove, property change, and dragging nodes)
+        cy.on('add remove data dragfreeon', saveGraphState);
+
+
+        // --- Clear Map Logic ---
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if (confirm("Are you sure you want to delete the entire map? This cannot be undone.")) {
+                cy.elements().remove();
+                localStorage.removeItem('trafficMapState');
+                nodeCounter = 1;
+                document.getElementById('inspector').style.display = 'none';
+            }
+        });
+
+
+        // --- 2. UI Controls ---
+        const modes = ['select', 'node', 'edge', 'delete'];
+        modes.forEach(mode => {
+            document.getElementById(`mode-${mode}`).addEventListener('click', (e) => {
+                currentMode = mode;
+                sourceNode = null;
+                document.querySelectorAll('.toolbar button:not(.sim-btn, .clear-btn)').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                cy.elements().unselect();
+                document.getElementById('inspector').style.display = 'none';
+            });
+        });
+
+        // --- 3. Graph Interactions ---
+        cy.on('tap', function (evt) {
+            if (evt.target === cy && currentMode === 'node') {
+                cy.add({ group: 'nodes', data: { id: 'Node_' + nodeCounter++ }, position: { x: evt.position.x, y: evt.position.y } });
+            }
+        });
+
+        cy.on('tap', 'node, edge', function (evt) {
+            const ele = evt.target;
+
+            if (currentMode === 'delete') {
+                if (selectedElement && selectedElement.id() === ele.id()) { document.getElementById('inspector').style.display = 'none'; }
+                ele.remove();
+                return;
+            }
+
+            if (ele.isNode() && currentMode === 'edge') {
+                if (!sourceNode) {
+                    sourceNode = ele;
+                } else if (sourceNode.id() !== ele.id()) {
+                    const newEdge = cy.add({
+                        group: 'edges',
+                        data: {
+                            id: sourceNode.id() + '-' + ele.id(),
+                            source: sourceNode.id(),
+                            target: ele.id(),
+                            lanes: [
+                                { id: Date.now(), flow: 'forward', volume: 100 },
+                                { id: Date.now() + 1, flow: 'reverse', volume: 100 }
+                            ]
+                        }
+                    });
+                    updateEdgeVisuals(newEdge);
+                    sourceNode = null;
+                }
+            } else if (currentMode === 'select') {
+                openInspector(ele);
+            }
+        });
+
+        // --- 4. Advanced Property Inspector ---
+        function openInspector(ele) {
+            selectedElement = ele;
+            const inspector = document.getElementById('inspector');
+            inspector.style.display = 'block';
+
+            if (ele.isNode()) {
+                document.getElementById('inspector-title').innerText = "Node Properties";
+                document.getElementById('node-props').style.display = 'block';
+                document.getElementById('edge-props').style.display = 'none';
+                document.getElementById('node-id').value = ele.data('id');
+            } else {
+                document.getElementById('inspector-title').innerText = "Edge Properties";
+                document.getElementById('node-props').style.display = 'none';
+                document.getElementById('edge-props').style.display = 'block';
+                document.getElementById('edge-source').innerText = ele.data('source');
+                document.getElementById('edge-target').innerText = ele.data('target');
+                renderLanesUI();
+            }
+        }
+
+        function renderLanesUI() {
+            if (!selectedElement || !selectedElement.isEdge()) return;
+
+            const container = document.getElementById('lanes-container');
+            container.innerHTML = '';
+
+            const lanes = selectedElement.data('lanes');
+            lanes.forEach((lane, index) => {
+                const laneDiv = document.createElement('div');
+                laneDiv.className = 'lane-item';
+                laneDiv.innerHTML = `
+                    <div class="lane-header">Lane ${index + 1} <button class="lane-remove" data-id="${lane.id}">Remove</button></div>
+                    <label>Direction</label>
+                    <select class="lane-flow" data-id="${lane.id}">
+                        <option value="forward" ${lane.flow === 'forward' ? 'selected' : ''}>Towards ${selectedElement.data('target')}</option>
+                        <option value="reverse" ${lane.flow === 'reverse' ? 'selected' : ''}>Towards ${selectedElement.data('source')}</option>
+                    </select>
+                    <label style="margin-top:5px;">Traffic Volume</label>
+                    <input type="number" class="lane-vol" data-id="${lane.id}" value="${lane.volume}">
+                `;
+                container.appendChild(laneDiv);
+            });
+
+            container.querySelectorAll('.lane-flow').forEach(sel => sel.addEventListener('change', updateLaneData));
+            container.querySelectorAll('.lane-vol').forEach(inp => inp.addEventListener('input', updateLaneData));
+            container.querySelectorAll('.lane-remove').forEach(btn => btn.addEventListener('click', removeLane));
+        }
+
+        function updateLaneData(e) {
+            const laneId = parseInt(e.target.getAttribute('data-id'));
+            const lanes = selectedElement.data('lanes');
+            const lane = lanes.find(l => l.id === laneId);
+
+            if (e.target.classList.contains('lane-flow')) { lane.flow = e.target.value; }
+            if (e.target.classList.contains('lane-vol')) { lane.volume = parseInt(e.target.value) || 0; }
+
+            updateEdgeVisuals(selectedElement);
+        }
+
+        function removeLane(e) {
+            const laneId = parseInt(e.target.getAttribute('data-id'));
+            let lanes = selectedElement.data('lanes');
+            lanes = lanes.filter(l => l.id !== laneId);
+            selectedElement.data('lanes', lanes);
+            renderLanesUI();
+            updateEdgeVisuals(selectedElement);
+        }
+
+        document.getElementById('add-lane-btn').addEventListener('click', () => {
+            const lanes = selectedElement.data('lanes');
+            lanes.push({ id: Date.now(), flow: 'forward', volume: 0 });
+            renderLanesUI();
+            updateEdgeVisuals(selectedElement);
+        });
+
+        function updateEdgeVisuals(edge) {
+            const lanes = edge.data('lanes');
+            let forward = 0, reverse = 0;
+            lanes.forEach(l => l.flow === 'forward' ? forward++ : reverse++);
+            edge.style('width', Math.max(2, lanes.length * 2));
+            edge.data('label', `${forward}➔ | ${reverse}⬅`);
+        }
+
+        // --- 5. The Optimization Simulation ---
+        document.getElementById('run-sim').addEventListener('click', () => {
+            cy.nodes().removeClass('bottleneck');
+
+            cy.nodes().forEach(node => {
+                const nodeId = node.id();
+                let incomingVolume = 0;
+                let outgoingLanes = 0;
+
+                node.connectedEdges().forEach(edge => {
+                    const isSource = edge.data('source') === nodeId;
+                    const lanes = edge.data('lanes');
+
+                    lanes.forEach(lane => {
+                        if (isSource) {
+                            if (lane.flow === 'forward') { outgoingLanes += 1; }
+                            if (lane.flow === 'reverse') { incomingVolume += lane.volume; }
+                        } else {
+                            if (lane.flow === 'forward') { incomingVolume += lane.volume; }
+                            if (lane.flow === 'reverse') { outgoingLanes += 1; }
+                        }
+                    });
+                });
+
+                let pressure = 0;
+                if (outgoingLanes > 0) {
+                    pressure = incomingVolume / (outgoingLanes * 400);
+                } else if (incomingVolume > 0) {
+                    pressure = 999;
+                }
+
+                if (pressure > 1.0) {
+                    node.addClass('bottleneck');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,740 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "x": -26.5,
+      "y": -55,
+      "lbl": "A",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        19,
+        20,
+        29,
+        42
+      ],
+      "phases": [
+        {
+          "edgeId": 19,
+          "duration": 30
+        },
+        {
+          "edgeId": 20,
+          "duration": 30
+        },
+        {
+          "edgeId": 29,
+          "duration": 30
+        },
+        {
+          "edgeId": 42,
+          "duration": 30
+        }
+      ],
+      "phaseTimer": 0,
+      "activeGreenEdge": 42,
+      "ai": {
+        "timeInPhase": 9.661300000000049,
+        "phaseQueue": [
+          19,
+          20,
+          29,
+          42
+        ],
+        "currentPhaseIndex": 3,
+        "historicalVolume": {
+          "19": 28.937280262832132,
+          "20": 79.78054897646962,
+          "29": 64.80928678561057,
+          "42": 29.605164933165884
+        },
+        "phaseDurations": {
+          "19": 17.09464204882578,
+          "20": 47.13020418035938,
+          "29": 38.285960151642676,
+          "42": 17.489193619172152
+        },
+        "memory": {
+          "19": 17.09464204882578,
+          "20": 47.13020418035938,
+          "29": 38.285960151642676,
+          "42": 17.489193619172152
+        }
+      },
+      "edgeStats": {
+        "19": {
+          "cars": 29,
+          "maxWait": 7.827893619172103
+        },
+        "20": {
+          "cars": 42,
+          "maxWait": 24.922535667997884
+        },
+        "29": {
+          "cars": 0,
+          "maxWait": 72.05273984835726
+        },
+        "42": {
+          "cars": 0,
+          "maxWait": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "x": 213.8175,
+      "y": -56.22749999999999,
+      "lbl": "B",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 19,
+          "to": 2375
+        },
+        {
+          "from": 22,
+          "to": 2375
+        }
+      ],
+      "lights": [
+        19,
+        22
+      ],
+      "ai": {
+        "timeInPhase": 0.5798999999999068,
+        "phaseQueue": [
+          19,
+          22
+        ],
+        "currentPhaseIndex": 1,
+        "historicalVolume": {
+          "19": 37.13780262025954,
+          "22": 25.25577154712962
+        },
+        "phaseDurations": {
+          "19": 71.42620652689605,
+          "22": 48.57379347310394
+        },
+        "memory": {
+          "19": 71.42620652689605,
+          "22": 48.57379347310394
+        }
+      },
+      "edgeStats": {
+        "19": {
+          "cars": 29,
+          "maxWait": 47.99389347310403
+        },
+        "22": {
+          "cars": 2,
+          "maxWait": 0
+        }
+      },
+      "activeGreenEdge": 22
+    },
+    {
+      "id": 3,
+      "x": -253.02499999999995,
+      "y": -50.9375,
+      "lbl": "C",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 4,
+      "x": -62.58499999999998,
+      "y": 115.69749999999998,
+      "lbl": "D",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        29
+      ],
+      "ai": {
+        "timeInPhase": 35.16119999999997,
+        "phaseQueue": [
+          29
+        ],
+        "currentPhaseIndex": 0,
+        "historicalVolume": {
+          "29": 0.5569686101662111
+        },
+        "phaseDurations": {
+          "29": 120
+        },
+        "memory": {
+          "29": 120
+        }
+      },
+      "edgeStats": {
+        "29": {
+          "cars": 0,
+          "maxWait": 0
+        }
+      },
+      "activeGreenEdge": 29
+    },
+    {
+      "id": 5,
+      "x": -159.12749999999994,
+      "y": 249.26999999999998,
+      "lbl": "E",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 30,
+          "to": 36
+        }
+      ],
+      "lights": [
+        31,
+        36
+      ],
+      "ai": {
+        "timeInPhase": 54.65659999999965,
+        "phaseQueue": [
+          31,
+          36
+        ],
+        "currentPhaseIndex": 0,
+        "historicalVolume": {
+          "31": 62.76525542249596,
+          "36": 51.50106377740618
+        },
+        "phaseDurations": {
+          "31": 65.9147043804135,
+          "36": 54.08529561958652
+        },
+        "memory": {
+          "31": 65.9147043804135,
+          "36": 54.08529561958652
+        }
+      },
+      "edgeStats": {
+        "31": {
+          "cars": 0,
+          "maxWait": 0
+        },
+        "36": {
+          "cars": 49,
+          "maxWait": 11.258104380413847
+        }
+      },
+      "activeGreenEdge": 31
+    },
+    {
+      "id": 6,
+      "x": -406.43499999999995,
+      "y": 257.2049999999999,
+      "lbl": "F",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        31,
+        32
+      ],
+      "ai": {
+        "timeInPhase": 52.40640000000005,
+        "phaseQueue": [
+          31,
+          32
+        ],
+        "currentPhaseIndex": 0,
+        "historicalVolume": {
+          "31": 57.14287608146822,
+          "32": 53.332890673479696
+        },
+        "phaseDurations": {
+          "31": 62.069224149277716,
+          "32": 57.93077585072227
+        },
+        "memory": {
+          "31": 62.069224149277716,
+          "32": 57.93077585072227
+        }
+      },
+      "edgeStats": {
+        "31": {
+          "cars": 0,
+          "maxWait": 0
+        },
+        "32": {
+          "cars": 52,
+          "maxWait": 9.662824149277668
+        }
+      },
+      "activeGreenEdge": 31
+    },
+    {
+      "id": 7,
+      "x": -623.3249999999998,
+      "y": 267.78499999999997,
+      "lbl": "G",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 8,
+      "x": -476.5274999999999,
+      "y": -58.8725,
+      "lbl": "H",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 9,
+      "x": 428.0625,
+      "y": -54.905,
+      "lbl": "I",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        22,
+        23
+      ],
+      "ai": {
+        "timeInPhase": 7.662899999999792,
+        "phaseQueue": [
+          22,
+          23
+        ],
+        "currentPhaseIndex": 1,
+        "historicalVolume": {
+          "22": 29.29563060082443,
+          "23": 46.36177359523022
+        },
+        "phaseDurations": {
+          "22": 46.46571884741263,
+          "23": 73.53428115258737
+        },
+        "memory": {
+          "22": 46.46571884741263,
+          "23": 73.53428115258737
+        }
+      },
+      "edgeStats": {
+        "22": {
+          "cars": 2,
+          "maxWait": 65.87138115258757
+        },
+        "23": {
+          "cars": 21,
+          "maxWait": 0
+        }
+      },
+      "activeGreenEdge": 23
+    },
+    {
+      "id": 10,
+      "x": 231.00999999999996,
+      "y": 249.26999999999998,
+      "lbl": "J",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 36,
+          "to": 2375
+        },
+        {
+          "from": 37,
+          "to": 2375
+        }
+      ],
+      "lights": [
+        36,
+        37
+      ],
+      "ai": {
+        "timeInPhase": 9.913399999999676,
+        "phaseQueue": [
+          36,
+          37
+        ],
+        "currentPhaseIndex": 1,
+        "historicalVolume": {
+          "36": 26.557955617652738,
+          "37": 21.038207799703635
+        },
+        "phaseDurations": {
+          "36": 66.95822615308057,
+          "37": 53.041773846919426
+        },
+        "memory": {
+          "36": 66.95822615308057,
+          "37": 53.041773846919426
+        }
+      },
+      "edgeStats": {
+        "36": {
+          "cars": 49,
+          "maxWait": 43.12837384691975
+        },
+        "37": {
+          "cars": 0,
+          "maxWait": 0
+        }
+      },
+      "activeGreenEdge": 37
+    },
+    {
+      "id": 11,
+      "x": 662.145,
+      "y": 243.97999999999996,
+      "lbl": "K",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        23,
+        37,
+        41
+      ],
+      "ai": {
+        "timeInPhase": 50.826299999999975,
+        "phaseQueue": [
+          23,
+          37,
+          41
+        ],
+        "currentPhaseIndex": 1,
+        "historicalVolume": {
+          "23": 21.036289940894516,
+          "37": 59.29531341893667,
+          "41": 6.813005439860738
+        },
+        "phaseDurations": {
+          "23": 28.96742354664476,
+          "37": 81.65092147728541,
+          "41": 9.381654976069832
+        },
+        "memory": {
+          "23": 28.96742354664476,
+          "37": 81.65092147728541,
+          "41": 9.381654976069832
+        }
+      },
+      "edgeStats": {
+        "23": {
+          "cars": 21,
+          "maxWait": 40.206276453355265
+        },
+        "37": {
+          "cars": 0,
+          "maxWait": 0
+        },
+        "41": {
+          "cars": 4,
+          "maxWait": 30.824621477285433
+        }
+      },
+      "activeGreenEdge": 37
+    },
+    {
+      "id": 12,
+      "x": -8.362499999999983,
+      "y": -261.215,
+      "lbl": "L",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        35,
+        42
+      ],
+      "ai": {
+        "timeInPhase": 62.656099999999746,
+        "phaseQueue": [
+          35,
+          42
+        ],
+        "currentPhaseIndex": 1,
+        "historicalVolume": {
+          "35": 9.063285567297948,
+          "42": 23.229906402414436
+        },
+        "phaseDurations": {
+          "35": 33.678747802193186,
+          "42": 86.32125219780681
+        },
+        "memory": {
+          "35": 33.678747802193186,
+          "42": 86.32125219780681
+        }
+      },
+      "edgeStats": {
+        "35": {
+          "cars": 10,
+          "maxWait": 23.665152197807068
+        },
+        "42": {
+          "cars": 0,
+          "maxWait": 0
+        }
+      },
+      "activeGreenEdge": 42
+    },
+    {
+      "id": 13,
+      "x": 231.00999999999996,
+      "y": -269.15,
+      "lbl": "M",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 14,
+      "x": 467.7374999999999,
+      "y": -270.47249999999997,
+      "lbl": "N",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 15,
+      "x": -264.92749999999995,
+      "y": -262.53749999999997,
+      "lbl": "O",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 16,
+      "x": 6.1850000000000165,
+      "y": -455.62249999999995,
+      "lbl": "P",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 17,
+      "x": -262.28249999999997,
+      "y": -458.2675,
+      "lbl": "Q",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 18,
+      "x": 577.3065175468747,
+      "y": -544.4546431562499,
+      "lbl": "R",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    },
+    {
+      "id": 40,
+      "x": 881.0096975264453,
+      "y": 255.0276908524998,
+      "lbl": "T",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": []
+    }
+  ],
+  "edges": [
+    {
+      "id": 19,
+      "from": 1,
+      "to": 2,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 20,
+      "from": 3,
+      "to": 1,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 21,
+      "from": 8,
+      "to": 3,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 22,
+      "from": 2,
+      "to": 9,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 23,
+      "from": 9,
+      "to": 11,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 24,
+      "from": 9,
+      "to": 14,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 25,
+      "from": 14,
+      "to": 18,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 26,
+      "from": 2,
+      "to": 13,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 27,
+      "from": 12,
+      "to": 13,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 29,
+      "from": 4,
+      "to": 1,
+      "out": 2,
+      "inl": 2,
+      "spd": 50
+    },
+    {
+      "id": 30,
+      "from": 5,
+      "to": 4,
+      "out": 2,
+      "inl": 2,
+      "spd": 50
+    },
+    {
+      "id": 31,
+      "from": 6,
+      "to": 5,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 32,
+      "from": 7,
+      "to": 6,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 33,
+      "from": 7,
+      "to": 8,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 34,
+      "from": 15,
+      "to": 12,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 35,
+      "from": 12,
+      "to": 16,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 36,
+      "from": 5,
+      "to": 10,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 37,
+      "from": 10,
+      "to": 11,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 38,
+      "from": 17,
+      "to": 16,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 41,
+      "from": 11,
+      "to": 40,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 42,
+      "from": 12,
+      "to": 1,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 2375,
+      "from": 2,
+      "to": 10,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    }
+  ],
+  "nextId": 7968,
+  "nodeCount": 20
+}
