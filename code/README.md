@@ -62,6 +62,9 @@ This simulator uses a **Predictive Scheduling Algorithm** inspired by profession
 Because this project is built in Vanilla JS, there are no dependencies to install.
 
 1. Clone or download the repository.
+   ```bash
+    git clone https://github.com/GENERAL-PRIME/project-001.git
+   ```
 2. Ensure all `.js` files and the `.css` file are in the same directory as `index.html`.
 3. Double-click `index.html` to open it in your browser.
 4. Click **SAMPLE MAP** in the top right to load a pre-built testing environment.
