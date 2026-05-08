@@ -19,13 +19,45 @@ The application is architected around a strict separation of concerns, decouplin
 
 ---
 
-## Predictive Adaptive Control (The AI Engine)
+## Algorithmic Deep Dive: Adaptive Proportional Scheduling
 
-At the heart of the simulation is the signal control logic. Instead of relying on reactive, queue-clearing triggers, intersections act as independent agents utilizing an **Exponential Moving Average (EMA)** to predict future traffic demand based on historical patterns.
+Unlike traditional actuated signals that reactively extend green times based on immediate gap-outs (e.g., induction loops), TrafficGraph employs a **Predictive Proportional Allocation Algorithm**. Intersections act as independent decentralized agents, calculating predetermined phase schedules using a four-step computational pipeline at the boundary of every signal cycle.
 
-1. **Demand Learning:** At the conclusion of a green phase, the intersection evaluates the queue length of the _next_ scheduled approach. This live data is blended with the algorithm's historical memory (`80% Past / 20% Present`), establishing an updated `historicalVolume` profile that smooths out bursty, anomalous traffic spikes.
-2. **Speed-Weighted Allocation:** To prevent dangerous, high-speed braking cascades, the AI applies a priority multiplier based on the approach road's speed limit. A 100 km/h corridor is mathematically weighted to exert twice the demand pressure of a 50 km/h street, ensuring high-speed arterials receive proportionally larger green-time allocations.
-3. **Dynamic Slicing:** The aggregate weighted demand is used to proportionally divide the intersection's total configured Cycle Length, allocating a predetermined green duration for every incoming road while strictly maintaining minimum green-time constraints.
+### Step 1: Demand Observation & Smoothing (EMA)
+
+At the conclusion of a green phase, the controller samples the physical queue length ($Q$)—the exact number of vehicles completely stopped at the approach line. To prevent the system from overreacting to anomalous traffic platoons, this live data is passed through an **Exponential Moving Average (EMA)** filter.
+
+$$V_{learned} = (V_{historical} \times \alpha) + (Q_{current} \times \beta)$$
+
+- $\alpha$ (History Weight) = `0.8`
+- $\beta$ (Current Weight) = `0.2`
+- _Result:_ The algorithm maintains a smoothed, persistent memory of demand ($V_{learned}$) for every incoming road, ensuring stable schedule transitions.
+
+### Step 2: Kinematic Priority Weighting
+
+Traffic networks contain roads of varying classifications. Stopping a 100 km/h arterial flow causes significantly more network latency and collision risk than stopping a 30 km/h residential street. The algorithm inherently understands this by applying a **Speed Weighting Multiplier** ($W_{speed}$) relative to a 50 km/h baseline.
+
+$$V_{weighted} = V_{learned} \times \left( \frac{\text{Speed Limit}}{50} \right)$$
+
+- _Result:_ An approach with a 100 km/h speed limit will exert mathematically double the "pressure" on the intersection controller compared to a 50 km/h road with the exact same volume of waiting cars.
+
+### Step 3: Proportional Cycle Slicing
+
+Once the weighted demand ($V_{weighted}$) is calculated for all active approaches, the controller calculates the total active pressure ($P_{total} = \sum V_{weighted}$). It then deducts the mandatory safety clearance intervals from the total User-Defined Cycle Length (e.g., 120s) to find the total allocatable green time ($T_{allocatable}$).
+
+The green time allocated to a specific phase ($T_{green}$) is calculated strictly proportionally:
+
+$$T_{green} = \max \left( MIN\_GREEN, \left( \frac{V_{weighted}}{P_{total}} \right) \times T_{allocatable} \right)$$
+
+- _Result:_ The algorithm guarantees that the intersection cycle exactly matches the user's defined cycle length, preventing clock-drift between adjacent intersections, while dynamically stretching the green slices to favor heavy, high-speed traffic.
+
+### Step 4: State Machine Execution
+
+With the duration calculated, the controller hands the schedule over to a strict kinematic state machine. The transition sequence enforces safety intervals to prevent simulated side-impact collisions:
+
+1.  **Green Phase:** Executes for the dynamically calculated $T_{green}$ duration.
+2.  **Yellow Phase:** Static duration (`4.0s`). Approaching vehicles calculate their stopping distance; if they cannot safely stop, they clear the intersection.
+3.  **All-Red Clearance:** Static duration (`1.5s`). All approaches are held at red to guarantee the physical intersection box is completely evacuated before the next phase index is triggered.
 
 ---
 
