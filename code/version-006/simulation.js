@@ -26,7 +26,6 @@ function spawnCars() {
     const maxLanes = dir === "out" ? edge.out : edge.inl;
 
     // HIDDEN: Emergency Spawn Chance
-    // const isEmergency = Math.random() < 0.02;
     const isEmergency = false;
 
     State.cars.push({
@@ -132,7 +131,6 @@ function updateTrafficLights(dt) {
     }
 
     // HIDDEN: Emergency Preemption Bypass
-    // const preempting = handleEmergencyPreemption(node);
     const preempting = false;
 
     if (preempting) {
@@ -184,6 +182,7 @@ function updateTrafficLights(dt) {
         if (c.edgeId === nextEdgeId && c.isStopped) carsWaiting++;
       });
 
+      // 1. Keep the Historical EMA pure (just counting physical cars)
       node.ai.historicalVolume[nextEdgeId] =
         node.ai.historicalVolume[nextEdgeId] * SIM_CONFIG.EWA_DECAY +
         carsWaiting * SIM_CONFIG.EWA_NEW_WEIGHT;
@@ -191,24 +190,56 @@ function updateTrafficLights(dt) {
         node.ai.historicalVolume[nextEdgeId] = SIM_CONFIG.VOLUME_FLOOR;
 
       let totalWeightedVolume = 0;
+
+      // 2. Calculate the Total Pie Size using Speed AND Road Length Saturation
       node.lights.forEach((id) => {
         const edge = getEdge(id);
         const speedWeight = edge ? edge.spd / 50 : 1.0;
+
+        let saturationWeight = 1.0;
+        if (edge) {
+          const maxCapacity = edge.len / SIM_CONFIG.SAFE_GAP;
+          const currentCars =
+            node.edgeStats?.[id]?.cars || (id === nextEdgeId ? carsWaiting : 0);
+          const saturation = Math.min(
+            1.0,
+            currentCars / Math.max(1, maxCapacity),
+          );
+          saturationWeight = 1.0 + saturation * 0.5; // Up to 50% priority boost for full roads
+        }
+
+        const combinedWeight = speedWeight * saturationWeight;
         totalWeightedVolume +=
           (node.ai.historicalVolume[id] || SIM_CONFIG.VOLUME_FLOOR) *
-          speedWeight;
+          combinedWeight;
       });
 
+      // 3. Slice the Pie using the new Combined Weights
       node.lights.forEach((id) => {
         const edge = getEdge(id);
+
         const speedWeight = edge ? edge.spd / 50 : 1.0;
+        let saturationWeight = 1.0;
+        if (edge) {
+          const maxCapacity = edge.len / SIM_CONFIG.SAFE_GAP;
+          const currentCars = node.edgeStats?.[id]?.cars || 0;
+          const saturation = Math.min(
+            1.0,
+            currentCars / Math.max(1, maxCapacity),
+          );
+          saturationWeight = 1.0 + saturation * 0.5;
+        }
+
+        const combinedWeight = speedWeight * saturationWeight;
         const weighted =
           (node.ai.historicalVolume[id] || SIM_CONFIG.VOLUME_FLOOR) *
-          speedWeight;
+          combinedWeight;
+
         const proportion =
           totalWeightedVolume > 0
             ? weighted / totalWeightedVolume
             : 1 / node.lights.length;
+
         node.ai.phaseDurations[id] = Math.max(
           SIM_CONFIG.MIN_GREEN_SEC,
           proportion *
@@ -446,7 +477,6 @@ function updateMetrics(dt) {
 
 // ─── Inspector Live Stats ────────────────────────────────────────────────────
 function updateInspectorLiveStats(forceUpdate = false) {
-  // 1. UPDATE GLOBAL METRICS (Always runs)
   const metricsEl = document.getElementById("metrics-panel");
   if (metricsEl && (State.simulation.isRunning || forceUpdate)) {
     const tp = State.metrics.totalThroughput;
@@ -461,7 +491,6 @@ function updateInspectorLiveStats(forceUpdate = false) {
     metricsEl.innerHTML = `<div>🕐 Sim time: <b>${clock}s</b></div><div>🚗 Throughput: <b>${tp}</b> cars</div><div>⏱ Avg wait: <b>${avgWait}s</b></div>`;
   }
 
-  // 2. INSPECTOR GUARD CLAUSE (Only run the rest if a node is selected)
   if (!State.interaction.selected || State.interaction.selected.type !== "node")
     return;
   if (!State.simulation.isRunning && !forceUpdate) return;
@@ -490,13 +519,6 @@ function updateInspectorLiveStats(forceUpdate = false) {
   if (node.ai?.inAllRed) {
     html += `<div style="color:#ff9900; margin-bottom:6px;"><b>⚠ ALL-RED: ${Math.max(0, SIM_CONFIG.ALL_RED_SEC - Math.floor(node.ai.allRedTimer || 0))}s clearance</b></div>`;
   }
-
-  // HIDDEN: Preemption HUD Text
-  /*
-  if (node.ai?.preempting) {
-    html += `<div style="color:#ff00aa; margin-bottom:6px;"><b>🚨 EMERGENCY PREEMPTION ACTIVE</b></div>`;
-  }
-  */
 
   const activeEdge = node.activeGreenEdge
     ? getEdge(node.activeGreenEdge)

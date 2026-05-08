@@ -1,10 +1,10 @@
-# TrafficGraph: Interactive AI Traffic Simulator (v6.0 - latest working)
+# TrafficGraph: Interactive AI Traffic Simulator (v6.0)
 
 ## Overview & Executive Summary
 
 **TrafficGraph** is a high-fidelity, browser-based traffic simulation and signal-control environment built entirely in Vanilla JavaScript and HTML5 Canvas. Designed with zero external dependencies, the system provides a robust sandbox for testing adaptive traffic control algorithms and modeling microscopic vehicle kinematics.
 
-Unlike traditional static-timer simulations, TrafficGraph features decentralized, intersection-level AI agents that utilize predictive scheduling and historical demand-learning to dynamically optimize traffic flow, reduce bottlenecks, and minimize network-wide latency.
+Unlike traditional static-timer simulations, TrafficGraph features decentralized, intersection-level AI agents that utilize predictive scheduling, historical demand-learning, and spatial saturation awareness to dynamically optimize traffic flow, prevent spillback gridlock, and minimize network-wide latency.
 
 ---
 
@@ -21,41 +21,32 @@ The application is architected around a strict separation of concerns, decouplin
 
 ## Algorithmic Deep Dive: Adaptive Proportional Scheduling
 
-Unlike traditional actuated signals that reactively extend green times based on immediate gap-outs (e.g., induction loops), TrafficGraph employs a **Predictive Proportional Allocation Algorithm**. Intersections act as independent decentralized agents, calculating predetermined phase schedules using a four-step computational pipeline at the boundary of every signal cycle.
+Unlike traditional actuated signals that reactively extend green times based on immediate gap-outs, TrafficGraph employs a **Predictive Proportional Allocation Algorithm**. Intersections act as independent decentralized agents, calculating predetermined phase schedules using a multi-step computational pipeline at the boundary of every signal cycle.
 
 ### Step 1: Demand Observation & Smoothing (EMA)
 
 At the conclusion of a green phase, the controller samples the physical queue length ($Q$)—the exact number of vehicles completely stopped at the approach line. To prevent the system from overreacting to anomalous traffic platoons, this live data is passed through an **Exponential Moving Average (EMA)** filter.
 
-$$V_{learned} = (V_{historical} \times \alpha) + (Q_{current} \times \beta)$$
+$$V_{learned} = (V_{historical} \times 0.8) + (Q_{current} \times 0.2)$$
 
-- $\alpha$ (History Weight) = `0.8`
-- $\beta$ (Current Weight) = `0.2`
-- _Result:_ The algorithm maintains a smoothed, persistent memory of demand ($V_{learned}$) for every incoming road, ensuring stable schedule transitions.
+This ensures the algorithm maintains a smoothed, persistent memory of demand ($V_{learned}$) for every incoming road, guaranteeing stable schedule transitions.
 
-### Step 2: Kinematic Priority Weighting
+### Step 2: Kinematic & Saturation Priority Weighting
 
-Traffic networks contain roads of varying classifications. Stopping a 100 km/h arterial flow causes significantly more network latency and collision risk than stopping a 30 km/h residential street. The algorithm inherently understands this by applying a **Speed Weighting Multiplier** ($W_{speed}$) relative to a 50 km/h baseline.
+To allocate time efficiently and safely, the AI calculates a unified priority multiplier ($W_{combined}$) for each approach based on two critical physical factors:
 
-$$V_{weighted} = V_{learned} \times \left( \frac{\text{Speed Limit}}{50} \right)$$
-
-- _Result:_ An approach with a 100 km/h speed limit will exert mathematically double the "pressure" on the intersection controller compared to a 50 km/h road with the exact same volume of waiting cars.
+1. **Speed Limit Weighting ($W_{speed}$):** Stopping a 100 km/h arterial flow causes significantly more network latency than stopping a 30 km/h residential street. The algorithm inherently applies a weight relative to a 50 km/h baseline, prioritizing high-speed flow to prevent braking cascades.
+2. **Queue Saturation Weighting ($W_{saturation}$):** To prevent systemic gridlock, the AI evaluates the _spatial capacity_ of the road (`Logical Length / Safe Gap`). As a short road fills up and approaches 100% saturation, the AI artificially boosts its priority weight by up to 50%. This forces the controller to dynamically clear short, over-filled roads _before_ traffic spills backward into upstream intersections.
 
 ### Step 3: Proportional Cycle Slicing
 
-Once the weighted demand ($V_{weighted}$) is calculated for all active approaches, the controller calculates the total active pressure ($P_{total} = \sum V_{weighted}$). It then deducts the mandatory safety clearance intervals from the total User-Defined Cycle Length (e.g., 120s) to find the total allocatable green time ($T_{allocatable}$).
-
-The green time allocated to a specific phase ($T_{green}$) is calculated strictly proportionally:
-
-$$T_{green} = \max \left( MIN\_GREEN, \left( \frac{V_{weighted}}{P_{total}} \right) \times T_{allocatable} \right)$$
-
-- _Result:_ The algorithm guarantees that the intersection cycle exactly matches the user's defined cycle length, preventing clock-drift between adjacent intersections, while dynamically stretching the green slices to favor heavy, high-speed traffic.
+The weighted demand is aggregated across all active approaches to find the total intersection pressure. The controller deducts mandatory safety clearance intervals from the total User-Defined Cycle Length (e.g., 120s), and the remaining allocatable green time is divided strictly proportionally based on each approach's combined weight.
 
 ### Step 4: State Machine Execution
 
-With the duration calculated, the controller hands the schedule over to a strict kinematic state machine. The transition sequence enforces safety intervals to prevent simulated side-impact collisions:
+The schedule is handed over to a strict kinematic state machine enforcing safety intervals to prevent simulated side-impact collisions:
 
-1.  **Green Phase:** Executes for the dynamically calculated $T_{green}$ duration.
+1.  **Green Phase:** Executes for the dynamically calculated duration.
 2.  **Yellow Phase:** Static duration (`4.0s`). Approaching vehicles calculate their stopping distance; if they cannot safely stop, they clear the intersection.
 3.  **All-Red Clearance:** Static duration (`1.5s`). All approaches are held at red to guarantee the physical intersection box is completely evacuated before the next phase index is triggered.
 
@@ -75,7 +66,6 @@ TrafficGraph v6 introduces a rigorous microscopic physics engine, moving away fr
 
 To accurately mirror real-world traffic engineering standards, the environment enforces several critical constraints:
 
-- **Strict Signal Phasing:** Transitions are non-binary. The AI controller manages a strict state machine (`GREEN` → `YELLOW` → `ALL_RED`). The mandatory All-Red clearance interval ensures the intersection box is physically evacuated before conflicting approaches receive a green signal.
 - **Unsignalized Yielding:** Intersections configured as `uncontrolled` utilize an occupancy-detection heuristic. Approaching vehicles dynamically scan the geometric bounds of the intersection; if cross-traffic is detected, they yield and reduce speed until the conflict zone is clear.
 - **Watchdog Failsafes:** Each AI controller runs a background watchdog timer. If an intersection experiences a logical deadlock or remains in a single phase beyond the `WATCHDOG_TIMEOUT`, the AI gracefully degrades to a safe, fixed-time fallback schedule.
 - **Live Network Analytics:** A background metrics engine continuously samples the network, providing a real-time HUD displaying the global Simulation Clock, total Network Throughput, and Rolling Average Wait Time.
@@ -94,10 +84,10 @@ The environment requires no build steps or local servers.
 
 ### Managing AI Memory (Export/Import)
 
-Because the intersection controllers store their learned demand patterns natively within the map data, saved files represent a snapshot of the AI's "brain."
+Because the intersection controllers store their learned demand patterns natively within the map data, saved JSON files act as a persistent snapshot of the AI's "brain."
 
 - **Preserving Memory:** Clicking **EXPORT** saves the current topology alongside the AI's `historicalVolume`. Importing this file allows the simulation to resume with its learned optimizations fully intact.
-- **Memory Scrubbing (Clean Slate):** To run a new simulation on an existing topology without the bias of previous traffic patterns, the AI memory must be scrubbed.
+- **Memory Scrubbing (Clean Slate):** To run a new simulation on an existing topology without the bias of previous traffic patterns, the AI memory must be scrubbed:
   1. Export the map to `traffic_map_backup.json`.
   2. Run the provided Node.js script: `node clean_map.js`
-  3. Import the resulting `traffic_map_clean.json`. The physical map will load, but all AI agents will be reset to their baseline learning state.
+  3. Import the resulting `traffic_map_clean.json`. The physical map will load perfectly, but all AI agents will be reset to their baseline learning state.
