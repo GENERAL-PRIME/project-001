@@ -5,11 +5,11 @@ const ctx = cv.getContext("2d");
 const wp = document.getElementById("wp");
 
 const CONFIG = {
-  LANE_WIDTH: 14,
-  NODE_RADIUS: 18,
-  CAR_LENGTH: 10,
-  CAR_WIDTH: 5.5,
-  ARROW_GAP: 200,
+  LANE_WIDTH: 14, // Visual width of a single lane (in pixels)
+  NODE_RADIUS: 18, // Radius of intersection nodes (in pixels)
+  CAR_LENGTH: 10, // Visual length of a car (in pixels)
+  CAR_WIDTH: 5.5, // Visual width of a car (in pixels)
+  ARROW_GAP: 200, // Distance from node center to draw turn arrows (in pixels)
   COLORS: {
     bg: "#080d16",
     grid: "#0d1522",
@@ -39,21 +39,21 @@ const CONFIG = {
 
 // All core physics and AI thresholds
 const SIM_CONFIG = {
-  MAX_CARS: 220,
-  MAX_DT: 0.05,
-  FIXED_STEP: 0.016,
-  EWA_DECAY: 0.8,
-  EWA_NEW_WEIGHT: 0.2,
-  VOLUME_FLOOR: 0.1,
-  MIN_GREEN_SEC: 4,
-  ALL_RED_SEC: 1.5,
-  PREEMPT_HOLD_SEC: 15,
-  WATCHDOG_TIMEOUT: 300,
-  SAVE_DEBOUNCE_MS: 500,
-  METRICS_WINDOW: 60,
-  POISSON_MEAN: 0.3,
-  SAFE_GAP: 25, // The physical distance cars maintain between each other
-  STOP_LINE_DIST: 60, // Distance from intersection where braking begins
+  MAX_CARS: 220, // Absolute max number of cars in the simulation to prevent browser overload.
+  MAX_DT: 0.05, // Max physics timestep to prevent instability during lag spikes.
+  FIXED_STEP: 0.016, // Fixed physics timestep (in seconds) for consistent simulation updates (60 FPS).
+  EWA_DECAY: 0.8, // Decay factor for exponentially weighted averages (e.g. wait times, throughput).
+  EWA_NEW_WEIGHT: 0.2, // Weight for new samples in exponentially weighted averages (e.g. wait times, throughput).
+  VOLUME_FLOOR: 0.1, // Minimum traffic volume to prevent zero-division and keep some AI learning signal.
+  MIN_GREEN_SEC: 4, // Minimum green light duration to prevent excessively rapid switching.
+  ALL_RED_SEC: 1.5, // All-red duration between light changes for safety.
+  PREEMPT_HOLD_SEC: 15, // Minimum time to hold preemptive green for emergency vehicles to ensure they can clear the intersection.
+  WATCHDOG_TIMEOUT: 300, // Time in seconds to reset the simulation if it appears stuck (e.g. due to a bug causing cars to freeze).
+  SAVE_DEBOUNCE_MS: 500, // Debounce delay for auto-saving state to localStorage after changes.
+  METRICS_WINDOW: 60, // Number of samples to include in the metrics window.
+  POISSON_MEAN: 0.3, //Probability coefficient (λ) for modeling bursty vehicle arrivals.
+  SAFE_GAP: 25, // Minimum safe gap between cars to prevent collisions (in pixels)
+  STOP_LINE_DIST: 60, // Distance from node center to stop line where cars must wait when red (in pixels)
 };
 
 let State = {

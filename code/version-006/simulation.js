@@ -183,9 +183,12 @@ function updateTrafficLights(dt) {
       });
 
       // 1. Keep the Historical EMA pure (just counting physical cars)
+      // FORMULA: Exponential Moving Average (EMA)
+      // V_learned = (V_historical * Decay_Factor) + (V_current * Update_Weight)
       node.ai.historicalVolume[nextEdgeId] =
         node.ai.historicalVolume[nextEdgeId] * SIM_CONFIG.EWA_DECAY +
         carsWaiting * SIM_CONFIG.EWA_NEW_WEIGHT;
+
       if (node.ai.historicalVolume[nextEdgeId] < SIM_CONFIG.VOLUME_FLOOR)
         node.ai.historicalVolume[nextEdgeId] = SIM_CONFIG.VOLUME_FLOOR;
 
@@ -199,6 +202,8 @@ function updateTrafficLights(dt) {
         let saturationWeight = 1.0;
         if (edge) {
           const maxCapacity = edge.len / SIM_CONFIG.SAFE_GAP;
+          // FORMULA: Queue Saturation Index
+          // Saturation = Current_Vehicles / Maximum_Physical_Capacity
           const currentCars =
             node.edgeStats?.[id]?.cars || (id === nextEdgeId ? carsWaiting : 0);
           const saturation = Math.min(
@@ -234,7 +239,8 @@ function updateTrafficLights(dt) {
         const weighted =
           (node.ai.historicalVolume[id] || SIM_CONFIG.VOLUME_FLOOR) *
           combinedWeight;
-
+        // FORMULA: Proportional Cycle Slicing
+        // T_green = Demand_Proportion * (Total_Cycle - Mandatory_Clearance_Times)
         const proportion =
           totalWeightedVolume > 0
             ? weighted / totalWeightedVolume
@@ -390,6 +396,8 @@ function updateCars(dt) {
         currentTargetSpeed = 0;
         isForcedStop = true;
       } else {
+        // FORMULA: Linear Deceleration Curve
+        // Target_Speed = Base_Speed * (Distance_Remaining / Total_Braking_Distance)
         const brakeFactor =
           (distToEnd - stopPin) / (SIM_CONFIG.STOP_LINE_DIST - stopPin);
         currentTargetSpeed *= brakeFactor;
@@ -408,6 +416,8 @@ function updateCars(dt) {
     }
 
     if (!car.isStopped && !isForcedStop) {
+      // FORMULA: Kinematic Integration (Euler Method)
+      // ΔProgress = (Velocity * ΔTime) / Logical_Road_Length
       car.progress += (car.speed * dt) / geom.logicalLength;
 
       // Prevent creeping past the line if light is red (only if they are behind it)
