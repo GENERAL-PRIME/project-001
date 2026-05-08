@@ -1,92 +1,71 @@
-# TrafficGraph: Interactive AI Traffic Simulator (Version-005 - Latest Working)
+# TrafficGraph: Interactive AI Traffic Simulator (v6.0 - latest working)
 
-TrafficGraph is a lightweight, browser-based traffic simulation engine built entirely in Vanilla JavaScript and HTML5 Canvas.
+## Overview & Executive Summary
 
-It allows users to dynamically build road networks, configure intersections, and watch as a built-in **Predictive AI** automatically sculpts traffic light schedules in real-time to minimize wait times and dissolve bottlenecks.
+**TrafficGraph** is a high-fidelity, browser-based traffic simulation and signal-control environment built entirely in Vanilla JavaScript and HTML5 Canvas. Designed with zero external dependencies, the system provides a robust sandbox for testing adaptive traffic control algorithms and modeling microscopic vehicle kinematics.
 
-## ✨ Key Features
-
-- **Interactive Canvas Builder:** Pan, zoom, and build complex road networks with a click-and-drag interface.
-- **Predictive AI Traffic Controller:** Traffic lights do not use static timers. Intersections act as independent agents that learn historical traffic volume (using an Exponential Moving Average) and dynamically slice their cycle length to build highly optimized, predetermined schedules.
-- **Speed-Weighted Routing:** The AI respects road speed limits (km/h), naturally prioritizing high-speed corridors to prevent dangerous braking cascades.
-- **Dynamic Geometry Engine:** Automatically calculates Left, Right, Straight, and U-Turns using vector math, allowing users to legally ban specific turns at any intersection.
-- **Data Persistence:** The map state and the AI's "Learned Memory" are automatically saved to your browser's local storage and can be exported/imported as JSON files.
+Unlike traditional static-timer simulations, TrafficGraph features decentralized, intersection-level AI agents that utilize predictive scheduling and historical demand-learning to dynamically optimize traffic flow, reduce bottlenecks, and minimize network-wide latency.
 
 ---
 
-## 📂 Project Architecture
+## System Architecture & Design Philosophy
 
-The application was refactored from a monolithic script into a clean, modular architecture. There are no build tools required (no Webpack or Node.js).
+The application is architected around a strict separation of concerns, decoupling the visual rendering engine from the underlying physics and decision-making logic.
 
-- **`index.html`**: The main entry point containing the UI toolbar, the canvas wrapper, and the configuration modals.
-- **`style.css`**: Contains all styling, CSS variables, and layout rules for the inspector panels and HUDs.
-- **`state.js`**: The central data store. Manages the global `State` object (nodes, edges, cars, camera) and handles `localStorage` saving, JSON exporting, and data sanitization.
-- **`math.js`**: The geometry engine. Handles world-to-screen coordinate translations and calculates turning angles.
-- **`render.js`**: The visual engine. Loops through the `State` arrays to draw the grid, roads, lane markings, cars, and live UI overlays (like the HUD countdown timers).
-- **`simulation.js`**: The physics and AI brain. Handles car spawning, movement physics, red-light braking, and the Predictive Scheduling AI that calculates green times.
-- **`main.js`**: The bridge. Handles all user input (mouse clicks, scrolling, zooming), manages the properties modals (Inspector, Edit Road, Edit Node), and runs the `requestAnimationFrame` game loop.
+- **`state.js`**: The central, globally accessible data store. It manages the topology (`nodes`, `edges`), entity tracking (`cars`), global configuration constants (`SIM_CONFIG`), and local storage persistence.
+- **`simulation.js`**: The core computational engine. It executes the AI predictive scheduling, the microscopic car-following models, collision avoidance, and aggregate metric sampling within a fixed-step physics loop.
+- **`math.js`**: A dedicated geometry module responsible for coordinate translations, vector mathematics, and the critical translation between visual canvas pixels and logical meters.
+- **`render.js` & `main.js`**: The presentation and I/O layers. They handle user interaction, dynamic topology construction, DOM updates, and `requestAnimationFrame` looping.
 
 ---
 
-## 🎮 How to Use
+## Predictive Adaptive Control (The AI Engine)
 
-Open `index.html` in any modern web browser to start.
+At the heart of the simulation is the signal control logic. Instead of relying on reactive, queue-clearing triggers, intersections act as independent agents utilizing an **Exponential Moving Average (EMA)** to predict future traffic demand based on historical patterns.
 
-### The Toolbar
-
-- **PAN:** Click and drag the background to move around. Scroll to zoom in and out.
-- **SELECT:** Click an intersection (Node) or a road (Edge) to open the Properties Inspector.
-- **+ NODE:** Click anywhere on the grid to place a new intersection.
-- **+ ROAD:** Click a starting Node, then click a destination Node to draw a road. You will be prompted to define the incoming/outgoing lanes and the speed limit.
-- **DELETE:** Click a Node or Road to instantly remove it from the map.
-
-### Simulation Controls
-
-- **▶ SIMULATE / ■ STOP:** Toggles the physics engine. Stopping the simulation automatically saves the AI's learned memory.
-- **DENSITY:** Controls the maximum number of cars allowed on the map simultaneously.
-- **SPEED:** A Time-Warp multiplier. `0.5x` runs the physics in slow motion, `2.0x` runs the physics and AI learning twice as fast.
+1. **Demand Learning:** At the conclusion of a green phase, the intersection evaluates the queue length of the _next_ scheduled approach. This live data is blended with the algorithm's historical memory (`80% Past / 20% Present`), establishing an updated `historicalVolume` profile that smooths out bursty, anomalous traffic spikes.
+2. **Speed-Weighted Allocation:** To prevent dangerous, high-speed braking cascades, the AI applies a priority multiplier based on the approach road's speed limit. A 100 km/h corridor is mathematically weighted to exert twice the demand pressure of a 50 km/h street, ensuring high-speed arterials receive proportionally larger green-time allocations.
+3. **Dynamic Slicing:** The aggregate weighted demand is used to proportionally divide the intersection's total configured Cycle Length, allocating a predetermined green duration for every incoming road while strictly maintaining minimum green-time constraints.
 
 ---
 
-## 🧠 How the AI Works
+## Kinematic Modeling & Vehicle Dynamics
 
-This simulator uses a **Predictive Scheduling Algorithm** inspired by professional traffic engineering.
+TrafficGraph v6 introduces a rigorous microscopic physics engine, moving away from simple percentage-based traversal to an absolute-distance kinematic model.
 
-1. **Learning:** When a traffic light switches, the intersection counts the cars left waiting. It blends this with its historical knowledge using an Exponential Moving Average (`80% Past + 20% Present`).
-2. **Speed Weighting:** The AI looks at the speed limit of the incoming roads. A 100 km/h road gets its traffic volume artificially multiplied by `2.0` compared to a 50 km/h road, prioritizing high-speed flow.
-3. **Scheduling:** The intersection takes its total Cycle Length (e.g., 120s) and distributes it proportionally based on the weighted historical volume.
-4. **Execution:** Cars are given a predetermined wait time. If a queue grows faster than the AI expected, the AI will learn from this "mistake" and allocate a longer green light in the next cycle.
+- **Decoupled Geometry (Visual vs. Logical Length):** The simulation separates the visual length of a road on the canvas from its logical, physical length. Users can draw a 50-pixel segment but configure it as a 5,000-meter highway. The physics engine utilizes this logical length to calculate exact travel times, braking distances, and spatial capacities.
+- **Car-Following Model:** Vehicles possess spatial awareness. The simulation implements an Intelligent Driver Model (IDM) framework where cars continuously monitor the vehicle directly ahead. If the gap closes below the `SAFE_GAP` threshold, the trailing vehicle interpolates its speed to match the leader, realistically simulating queue spillback and dense traffic compression.
+- **Absolute-Distance Braking:** Braking logic triggers at precise, logical distances from an intersection stop-line rather than arbitrary road percentages. Vehicles execute a smooth deceleration curve, coming to a complete stop exactly at the geometric stop-line.
 
-## 🚀 Installation & Setup
+---
 
-Because this project is built in Vanilla JS, there are no dependencies to install.
+## Core Capabilities & Safety Mechanisms
 
-1. Clone or download the repository.
-   ```bash
-    git clone https://github.com/GENERAL-PRIME/project-001.git
-   ```
-2. Ensure all `.js` files and the `.css` file are in the same directory as `index.html`.
-3. Double-click `index.html` to open it in your browser.
-4. Click **SAMPLE MAP** in the top right to load a pre-built testing environment.
+To accurately mirror real-world traffic engineering standards, the environment enforces several critical constraints:
 
-## 🧹 Managing AI Memory (Save States)
+- **Strict Signal Phasing:** Transitions are non-binary. The AI controller manages a strict state machine (`GREEN` → `YELLOW` → `ALL_RED`). The mandatory All-Red clearance interval ensures the intersection box is physically evacuated before conflicting approaches receive a green signal.
+- **Unsignalized Yielding:** Intersections configured as `uncontrolled` utilize an occupancy-detection heuristic. Approaching vehicles dynamically scan the geometric bounds of the intersection; if cross-traffic is detected, they yield and reduce speed until the conflict zone is clear.
+- **Watchdog Failsafes:** Each AI controller runs a background watchdog timer. If an intersection experiences a logical deadlock or remains in a single phase beyond the `WATCHDOG_TIMEOUT`, the AI gracefully degrades to a safe, fixed-time fallback schedule.
+- **Live Network Analytics:** A background metrics engine continuously samples the network, providing a real-time HUD displaying the global Simulation Clock, total Network Throughput, and Rolling Average Wait Time.
 
-Because the AI stores its learned traffic patterns directly inside the map's data, your exported `.json` files act as a snapshot of the AI's "brain."
+---
 
-**IF you want to keep the AI's learned patterns:**
+## Deployment & Interaction
 
-- Simply click **EXPORT** in the UI.
-- When you **IMPORT** this file later, the AI will remember all its historical traffic data and continue predicting schedules exactly where it left off.
+### Execution
 
-**ELSE IF you want a completely clean slate (Keep the roads, wipe the brain):**
+The environment requires no build steps or local servers.
 
-- If you want to test a new traffic scenario on the exact same physical map, you must scrub the AI's memory. Otherwise, it will carry over its old assumptions into your new test.
-- You can instantly wipe the memory using the included Node.js cleaner script:
-  1. Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
-  2. Click **EXPORT** in the UI and save your map as `traffic_map_backup.json` in your project folder.
-  3. Open your terminal in that folder and run the cleaning script:
-     ```bash
-     node clean_map.js
-     ```
-  4. The script will safely strip out all `historicalVolume`, timers, and phase schedules, generating a new file called `traffic_map_clean.json`.
-  5. Click **IMPORT** in the UI and upload `traffic_map_clean.json`. Your roads and properties will load perfectly, but the AI will begin learning from scratch!
+1. Clone the repository.
+2. Open `index.html` in any modern web browser.
+3. Click **SAMPLE MAP** to initialize a demonstration environment, or use the interactive toolbar to construct a custom topology.
+
+### Managing AI Memory (Export/Import)
+
+Because the intersection controllers store their learned demand patterns natively within the map data, saved files represent a snapshot of the AI's "brain."
+
+- **Preserving Memory:** Clicking **EXPORT** saves the current topology alongside the AI's `historicalVolume`. Importing this file allows the simulation to resume with its learned optimizations fully intact.
+- **Memory Scrubbing (Clean Slate):** To run a new simulation on an existing topology without the bias of previous traffic patterns, the AI memory must be scrubbed.
+  1. Export the map to `traffic_map_backup.json`.
+  2. Run the provided Node.js script: `node clean_map.js`
+  3. Import the resulting `traffic_map_clean.json`. The physical map will load, but all AI agents will be reset to their baseline learning state.
