@@ -53,7 +53,7 @@ const SIM_CONFIG = {
   METRICS_WINDOW: 60,
   POISSON_MEAN: 0.3,
   SAFE_GAP: 25, // The physical distance cars maintain between each other
-  STOP_LINE_DIST: 35, // Distance from intersection where braking begins
+  STOP_LINE_DIST: 60, // Distance from intersection where braking begins
 };
 
 let State = {

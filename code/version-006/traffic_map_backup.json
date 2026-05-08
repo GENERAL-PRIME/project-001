@@ -14,8 +14,8 @@
         29,
         42
       ],
-      "throughput": 719,
-      "totalWait": 33903.5999999995
+      "throughput": 1389,
+      "totalWait": 61546.047999998955
     },
     {
       "id": 2,
@@ -38,8 +38,8 @@
         19,
         22
       ],
-      "throughput": 551,
-      "totalWait": 7591.35999999967
+      "throughput": 1044,
+      "totalWait": 14668.607999999165
     },
     {
       "id": 3,
@@ -50,22 +50,22 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 430,
-      "totalWait": 222.76799999999992
+      "throughput": 874,
+      "totalWait": 395.1039999999998
     },
     {
       "id": 4,
       "x": -62.58499999999998,
       "y": 115.69749999999998,
       "lbl": "D",
-      "ctrl": "signalized",
+      "ctrl": "uncontrolled",
       "cycle": 120,
       "banned_turns": [],
       "lights": [
         29
       ],
-      "throughput": 428,
-      "totalWait": 17.920000000000012
+      "throughput": 883,
+      "totalWait": 36.39999999999997
     },
     {
       "id": 5,
@@ -81,11 +81,10 @@
         }
       ],
       "lights": [
-        31,
-        36
+        31
       ],
-      "throughput": 625,
-      "totalWait": 10133.039999999664
+      "throughput": 1287,
+      "totalWait": 20332.367999998976
     },
     {
       "id": 6,
@@ -99,8 +98,8 @@
         31,
         32
       ],
-      "throughput": 594,
-      "totalWait": 15675.663999999202
+      "throughput": 1191,
+      "totalWait": 25644.767999998567
     },
     {
       "id": 7,
@@ -119,8 +118,8 @@
         32,
         11104
       ],
-      "throughput": 610,
-      "totalWait": 2622.623999999873
+      "throughput": 1242,
+      "totalWait": 4159.7599999997665
     },
     {
       "id": 8,
@@ -131,23 +130,23 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 432,
-      "totalWait": 321.56800000000015
+      "throughput": 886,
+      "totalWait": 613.3120000000009
     },
     {
       "id": 9,
       "x": 428.0625,
       "y": -54.905,
       "lbl": "I",
-      "ctrl": "signalized",
+      "ctrl": "uncontrolled",
       "cycle": 120,
       "banned_turns": [],
       "lights": [
         22,
         23
       ],
-      "throughput": 422,
-      "totalWait": 5043.871999999887
+      "throughput": 804,
+      "totalWait": 7177.96799999981
     },
     {
       "id": 10,
@@ -170,8 +169,8 @@
         36,
         37
       ],
-      "throughput": 325,
-      "totalWait": 4379.407999999783
+      "throughput": 649,
+      "totalWait": 7108.175999999612
     },
     {
       "id": 11,
@@ -186,8 +185,8 @@
         37,
         41
       ],
-      "throughput": 362,
-      "totalWait": 10844.192000000312
+      "throughput": 701,
+      "totalWait": 18395.32800000002
     },
     {
       "id": 12,
@@ -201,8 +200,8 @@
         35,
         42
       ],
-      "throughput": 555,
-      "totalWait": 4202.799999999843
+      "throughput": 1083,
+      "totalWait": 8129.759999999613
     },
     {
       "id": 13,
@@ -213,8 +212,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 346,
-      "totalWait": 250.99199999999956
+      "throughput": 676,
+      "totalWait": 526.8639999999992
     },
     {
       "id": 14,
@@ -225,8 +224,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 238,
-      "totalWait": 24.736
+      "throughput": 475,
+      "totalWait": 77.63199999999999
     },
     {
       "id": 15,
@@ -237,8 +236,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 185,
-      "totalWait": 28.240000000000013
+      "throughput": 389,
+      "totalWait": 130.56
     },
     {
       "id": 16,
@@ -249,8 +248,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 233,
-      "totalWait": 7.824000000000006
+      "throughput": 445,
+      "totalWait": 18.144000000000005
     },
     {
       "id": 17,
@@ -261,8 +260,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 244,
-      "totalWait": 105.32799999999996
+      "throughput": 443,
+      "totalWait": 170.39999999999986
     },
     {
       "id": 18,
@@ -273,8 +272,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 223,
-      "totalWait": 21.76000000000001
+      "throughput": 460,
+      "totalWait": 30.01599999999999
     },
     {
       "id": 40,
@@ -285,8 +284,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 191,
-      "totalWait": 12.48000000000001
+      "throughput": 366,
+      "totalWait": 18.03200000000001
     },
     {
       "id": 11103,
@@ -297,8 +296,8 @@
       "cycle": 120,
       "banned_turns": [],
       "lights": [],
-      "throughput": 221,
-      "totalWait": 9.056000000000006
+      "throughput": 428,
+      "totalWait": 12.144000000000009
     }
   ],
   "edges": [
@@ -489,6 +488,6 @@
       "spd": 50
     }
   ],
-  "nextId": 14424,
+  "nextId": 16106,
   "nodeCount": 21
 }

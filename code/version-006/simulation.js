@@ -374,13 +374,24 @@ function updateCars(dt) {
       }
     }
 
-    if (isRedLight && distToEnd < SIM_CONFIG.STOP_LINE_DIST) {
-      if (distToEnd <= 5.5) {
-        car.progress = 1 - 5 / geom.logicalLength;
+    // ──────────────────────────────────────────────────────────
+    // FIX: Pedestrian Crosswalk Clearance
+    // ──────────────────────────────────────────────────────────
+    const stopPin = 32; // mathematically guarantees 9-units of clear space before the intersection
+
+    // Only force braking if the car hasn't crossed the stop line yet!
+    if (
+      isRedLight &&
+      distToEnd >= stopPin &&
+      distToEnd < SIM_CONFIG.STOP_LINE_DIST
+    ) {
+      if (distToEnd <= stopPin + 0.5) {
+        car.progress = 1 - stopPin / geom.logicalLength; // Pin to the stop line
         currentTargetSpeed = 0;
         isForcedStop = true;
       } else {
-        const brakeFactor = (distToEnd - 5) / (SIM_CONFIG.STOP_LINE_DIST - 5);
+        const brakeFactor =
+          (distToEnd - stopPin) / (SIM_CONFIG.STOP_LINE_DIST - stopPin);
         currentTargetSpeed *= brakeFactor;
       }
     }
@@ -398,8 +409,11 @@ function updateCars(dt) {
 
     if (!car.isStopped && !isForcedStop) {
       car.progress += (car.speed * dt) / geom.logicalLength;
-      if (isRedLight)
-        car.progress = Math.min(car.progress, 1 - 5 / geom.logicalLength);
+
+      // Prevent creeping past the line if light is red (only if they are behind it)
+      if (isRedLight && distToEnd >= stopPin) {
+        car.progress = Math.min(car.progress, 1 - stopPin / geom.logicalLength);
+      }
     }
 
     if (car.progress >= 1) {
@@ -437,7 +451,7 @@ function updateCars(dt) {
           ];
         car.edgeId = nextEdge.id;
         car.progress = 0;
-        car.baseSpeed = (nextEdge.spd / 50) * 60; // HIDDEN: Emergency multiplier
+        car.baseSpeed = (nextEdge.spd / 50) * 60;
 
         if (nextEdge.from === targetNodeId && nextEdge.out > 0) {
           car.direction = "out";
