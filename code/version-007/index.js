@@ -1,3 +1,15 @@
+// ⚠️ DEPRECATED: This file is legacy and has been replaced by modular structure.
+// New architecture uses:
+//   - state.js   — Global state management
+//   - math.js    — Coordinate transformations and geometry
+//   - render.js  — Canvas drawing
+//   - simulation.js — Traffic physics and AI
+//   - main.js    — UI and interaction
+//   - utils.js   — Common utilities and validation
+//
+// This file can be safely deleted. The HTML has been updated to load
+// the modular scripts instead.
+
 window.TF = (function () {
   const cv = document.getElementById("cv"),
     ctx = cv.getContext("2d"),

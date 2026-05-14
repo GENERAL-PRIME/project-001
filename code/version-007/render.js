@@ -1,13 +1,18 @@
-// render.js — All canvas drawing logic.
+// render.js — All canvas drawing logic with improved organization.
 
-// ─── Canvas resize ────────────────────────────────────────────────────────────
-// FIX (Design): ResizeObserver instead of per-frame getBoundingClientRect().
+// ─── CANVAS MANAGEMENT ────────────────────────────────────────────────────────
+/**
+ * Monitor canvas parent for resize events
+ */
 let _canvasNeedsResize = true;
 const _resizeObserver = new ResizeObserver(() => {
   _canvasNeedsResize = true;
 });
 _resizeObserver.observe(wp);
 
+/**
+ * Resizes canvas to match container dimensions
+ */
 function resizeCanvas() {
   if (!_canvasNeedsResize) return;
   _canvasNeedsResize = false;
@@ -216,7 +221,9 @@ function drawTrafficLights() {
         const stats = node.edgeStats[edgeId];
         const isGreen = node.activeGreenEdge === edgeId && !node.ai?.inAllRed;
         const waitTime = Math.floor(stats.maxWait);
-        const goTime = Math.floor(node.ai?.timeInPhase || 0);
+        const totalGreen = node.ai?.phaseDurations?.[edgeId] || 0;
+        const elapsed = node.ai?.timeInPhase || 0;
+        const goTime = Math.floor(Math.max(0, totalGreen - elapsed));
 
         const hudX = sx - ux * 26 * State.camera.zoom;
         const hudY = sy - uy * 26 * State.camera.zoom;
@@ -305,6 +312,9 @@ function drawIntersections() {
 function drawCars() {
   State.cars.forEach((car) => {
     const edge = getEdge(car.edgeId);
+    // S5 FIX: Guard against cars whose edge was deleted while simulation is running.
+    // Without this, the car would remain invisibly in State.cars accumulating metrics.
+    if (!edge) return;
     const geom = getEdgeGeometry(edge);
     if (!geom) return;
 
@@ -375,4 +385,44 @@ function drawInteractionOverlays() {
       ctx.setLineDash([]);
     }
   }
+}
+
+// ─── Simulation Clock Overlay ─────────────────────────────────────────────────
+/**
+ * S3 FIX: Draws a compact simulation clock in the top-left corner of the canvas.
+ * Previously called in main.js frame() but never implemented, so silently skipped.
+ */
+function drawSimulationClock() {
+  if (!State.simulation.isRunning) return;
+
+  const clock = State.simulation.clock;
+  const mins = Math.floor(clock / 60);
+  const secs = Math.floor(clock % 60);
+  const label =
+    mins > 0 ? `${mins}m ${String(secs).padStart(2, "0")}s` : `${secs}s`;
+
+  const text = `⏱ ${label}`;
+  const padding = 6;
+  const fontSize = Math.max(9, Math.round(10 * Math.min(State.camera.zoom, 1)));
+
+  ctx.font = `600 ${fontSize}px ${getComputedStyle(document.body).fontFamily || "monospace"}`;
+  const textW = ctx.measureText(text).width;
+  const boxW = textW + padding * 2;
+  const boxH = fontSize + padding * 2;
+  const x = 10;
+  const y = 10;
+
+  ctx.fillStyle = "rgba(8, 13, 22, 0.82)";
+  ctx.beginPath();
+  ctx.roundRect(x, y, boxW, boxH, 4);
+  ctx.fill();
+
+  ctx.strokeStyle = CONFIG.COLORS.nodeBorder + "66";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = CONFIG.COLORS.text;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x + padding, y + boxH / 2);
 }

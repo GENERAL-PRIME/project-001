@@ -1,4 +1,4 @@
-# TrafficGraph: Interactive AI Traffic Simulator (v6.0)
+# TrafficGraph: Interactive AI Traffic Simulator (v7.0)
 
 ## Overview & Executive Summary
 

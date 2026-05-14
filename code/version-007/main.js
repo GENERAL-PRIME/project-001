@@ -1,4 +1,10 @@
 // main.js — UI management, event listeners, and the main animation loop.
+// Handles:
+//   - Modal dialogs for creating/editing roads and intersections
+//   - Inspector panel for viewing node/road details
+//   - User input handling (mouse, keyboard, wheel)
+//   - Event listeners and mode management
+//   - Main animation loop
 
 // ─── Modal: Road ──────────────────────────────────────────────────────────────
 function showModal(type) {
@@ -63,19 +69,10 @@ function showMoNode(id) {
   }
 
   let turnsHTML = "";
-
-  // Include all connected roads as potential outgoing routes (broad + narrow road compatibility)
-  const allConnectedEdges = State.edges.filter(
-    (e) => e.from === node.id || e.to === node.id,
-  );
-  const validOutEdges = allConnectedEdges.filter(
-    (e) => (e.from === node.id && e.out > 0) || (e.to === node.id && e.inl > 0),
-  );
-
-  if (inEdges.length > 0 && validOutEdges.length > 0) {
+  if (inEdges.length > 0 && outEdges.length > 0) {
     turnsHTML += `<div style="max-height:200px; overflow-y:auto; border:1px solid var(--color-border-secondary); padding:8px; margin-bottom:12px; border-radius:4px; background:var(--color-background-secondary)">`;
     inEdges.forEach((ie) => {
-      validOutEdges.forEach((oe) => {
+      outEdges.forEach((oe) => {
         if (ie.id === oe.id) return;
         const prevN = getNode(ie.to === node.id ? ie.from : ie.to);
         const nextN = getNode(oe.from === node.id ? oe.to : oe.from);
@@ -85,6 +82,13 @@ function showMoNode(id) {
         const isBanned = node.banned_turns.find(
           (bt) => bt.from === ie.id && bt.to === oe.id,
         );
+        // Lane width info for narrow↔broad road visibility
+        const ieLanes = ie.to === node.id ? ie.out : ie.inl;
+        const oeLanes = oe.from === node.id ? oe.out : oe.inl;
+        const widthTag =
+          ieLanes !== oeLanes
+            ? `<span style="font-size:9px; padding:1px 4px; border-radius:3px; background:rgba(245,197,24,0.15); color:#f5c518; margin-left:2px;">${ieLanes}→${oeLanes} lanes</span>`
+            : `<span style="font-size:9px; color:var(--color-text-tertiary); margin-left:2px;">${ieLanes} lane${ieLanes !== 1 ? "s" : ""}</span>`;
         turnsHTML += `<label style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:11px; cursor:pointer;">
                     <input type="checkbox" class="turn-cb" data-from="${ie.id}" data-to="${oe.id}" ${
                       isBanned ? "" : "checked"
@@ -93,7 +97,7 @@ function showMoNode(id) {
                       prevN.lbl
                     }</b> to <b>${
                       nextN.lbl
-                    }</b> <i style="color:var(--color-text-tertiary)">(${tType})</i></span>
+                    }</b> <i style="color:var(--color-text-tertiary)">(${tType})</i>${widthTag}</span>
                 </label>`;
       });
     });
@@ -102,39 +106,31 @@ function showMoNode(id) {
     turnsHTML += `<div style="font-size:10px; color:var(--color-text-tertiary); margin-bottom:12px;">Connect multiple roads to configure turns.</div>`;
   }
 
+  const isSignalized = node.ctrl === "signalized";
   document.getElementById("mb").innerHTML = `
         <h4>Configure Intersection (${node.lbl})</h4>
         <div class="mf"><label>LABEL</label><input type="text" id="mn1" value="${node.lbl}"></div>
         <div class="mf"><label>CONTROL TYPE</label>
-           <select id="mn2">
+           <select id="mn2" onchange="
+             const sig = this.value === 'signalized';
+             document.getElementById('mn-cycle-row').style.display = sig ? '' : 'none';
+             document.getElementById('mn-lights-row').style.display = sig ? '' : 'none';
+           ">
              <option value="signalized" ${
                node.ctrl === "signalized" ? "selected" : ""
-             }>Signalized</option>
+             }>Signalized (Traffic Lights)</option>
              <option value="uncontrolled" ${
                node.ctrl === "uncontrolled" ? "selected" : ""
-             }>Uncontrolled</option>
+             }>Uncontrolled (Give Way)</option>
            </select>
         </div>
-        <div id="signalized-options" style="display: ${node.ctrl === "signalized" ? "block" : "none"};">
-          <div class="mf"><label>CYCLE LENGTH (SEC)</label><input type="number" id="mn3" min="10" max="240" value="${
-            node.cycle
-          }"></div>
-          <div class="mf"><label>ASSIGN TRAFFIC LIGHTS</label>${lightsHTML}</div>
-        </div>
+        <div class="mf" id="mn-cycle-row" style="display:${isSignalized ? "" : "none"}"><label>CYCLE LENGTH (SEC)</label><input type="number" id="mn3" min="10" max="240" value="${
+          node.cycle
+        }"></div>
+        <div class="mf" id="mn-lights-row" style="display:${isSignalized ? "" : "none"}"><label>ASSIGN TRAFFIC LIGHTS</label>${lightsHTML}</div>
         <div class="mf"><label>ALLOWED TURNS</label>${turnsHTML}</div>
         <div class="ma"><button onclick="mCancel()">CANCEL</button><button class="ok" onclick="mOkNode()">SAVE</button></div>`;
   document.getElementById("mo").classList.add("vis");
-
-  // Add event listener to control type dropdown to toggle signalized options
-  const controlTypeSelect = document.getElementById("mn2");
-  controlTypeSelect.addEventListener("change", function () {
-    const signalizedOptions = document.getElementById("signalized-options");
-    if (this.value === "signalized") {
-      signalizedOptions.style.display = "block";
-    } else {
-      signalizedOptions.style.display = "none";
-    }
-  });
 }
 
 function showMoEdge(id) {
@@ -301,20 +297,31 @@ function mOk() {
 function mOkNode() {
   if (!State.interaction.pendingNode) return;
   const n = State.interaction.pendingNode;
+  const prevCtrl = n.ctrl;
+
   n.lbl = document.getElementById("mn1").value;
   n.ctrl = document.getElementById("mn2").value;
+  n.cycle = parseInt(document.getElementById("mn3").value) || 120;
 
-  // Only process traffic light and cycle settings if signalized
-  if (n.ctrl === "signalized") {
-    n.cycle = parseInt(document.getElementById("mn3").value) || 120;
+  if (n.ctrl === "uncontrolled") {
+    // Switching to uncontrolled: strip all traffic-light & AI state
+    n.lights = [];
+    delete n.ai;
+    delete n.edgeStats;
+    delete n.activeGreenEdge;
+    delete n.phaseTimer;
+  } else {
+    // Switching to (or staying) signalized: ensure lights array exists
     n.lights = [];
     document.querySelectorAll(".light-cb").forEach((cb) => {
       if (cb.checked) n.lights.push(parseInt(cb.getAttribute("data-edge")));
     });
-  } else {
-    // Clear lights and cycle for uncontrolled nodes
-    n.lights = [];
-    n.cycle = 120; // Reset to default
+    // Reset AI so it re-initialises cleanly on next sim tick
+    if (prevCtrl !== n.ctrl) {
+      delete n.ai;
+      delete n.edgeStats;
+      delete n.activeGreenEdge;
+    }
   }
 
   n.banned_turns = [];
@@ -388,92 +395,65 @@ function mCancel() {
   State.interaction.pendingEdge = null;
   State.interaction.pendingNode = null;
   State.interaction.pendingEditEdge = null;
+  State.interaction.pendingNewNode = null;
   hideModal();
 }
 
-function showNodeTypeDialog(x, y) {
-  const modal = document.createElement("div");
-  modal.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #0d1522;
-    border: 2px solid #1a90b8;
-    border-radius: 8px;
-    padding: 20px;
-    z-index: 10000;
-    font-family: monospace;
-    color: #fff;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(26, 144, 184, 0.3);
-  `;
-
-  const title = document.createElement("div");
-  title.textContent = "Select Node Type";
-  title.style.cssText =
-    "margin-bottom: 15px; font-size: 16px; font-weight: bold;";
-  modal.appendChild(title);
-
-  const buttonContainer = document.createElement("div");
-  buttonContainer.style.cssText =
-    "display: flex; gap: 10px; justify-content: center;";
-
-  const signalizedBtn = document.createElement("button");
-  signalizedBtn.textContent = "Signalized";
-  signalizedBtn.style.cssText = `
-    padding: 10px 20px;
-    background: #2ec4e8;
-    color: #000;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-family: monospace;
-  `;
-  signalizedBtn.onclick = () => {
-    document.body.removeChild(modal);
-    addNode(x, y, "signalized");
-  };
-
-  const uncontrolledBtn = document.createElement("button");
-  uncontrolledBtn.textContent = "Uncontrolled";
-  uncontrolledBtn.style.cssText = `
-    padding: 10px 20px;
-    background: #ff6535;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-family: monospace;
-  `;
-  uncontrolledBtn.onclick = () => {
-    document.body.removeChild(modal);
-    addNode(x, y, "uncontrolled");
-  };
-
-  buttonContainer.appendChild(signalizedBtn);
-  buttonContainer.appendChild(uncontrolledBtn);
-  modal.appendChild(buttonContainer);
-  document.body.appendChild(modal);
-}
-
-function addNode(x, y, ctrl = "signalized") {
-  const lbl =
+function addNode(x, y) {
+  // Show a modal asking for node type before committing
+  const defaultLbl =
     String.fromCharCode(65 + (State.nodeCount % 26)) +
     (State.nodeCount >= 26 ? String(Math.floor(State.nodeCount / 26)) : "");
+  State.interaction.pendingNewNode = { x, y };
+
+  document.getElementById("mb").innerHTML = `
+    <h4>New Intersection</h4>
+    <div class="mf"><label>LABEL</label><input type="text" id="nn-lbl" value="${defaultLbl}" maxlength="4"></div>
+    <div class="mf"><label>CONTROL TYPE</label>
+      <select id="nn-ctrl" onchange="
+        document.getElementById('nn-cycle-row').style.display =
+          this.value === 'signalized' ? '' : 'none';
+      ">
+        <option value="signalized">Signalized (Traffic Lights)</option>
+        <option value="uncontrolled">Uncontrolled (Give Way)</option>
+      </select>
+    </div>
+    <div class="mf" id="nn-cycle-row"><label>CYCLE LENGTH (SEC)</label>
+      <input type="number" id="nn-cycle" min="10" max="240" value="120">
+    </div>
+    <div class="ma">
+      <button onclick="mCancel()">CANCEL</button>
+      <button class="ok" onclick="mOkNewNode()">PLACE NODE</button>
+    </div>`;
+  document.getElementById("mo").classList.add("vis");
+}
+
+function mOkNewNode() {
+  const pending = State.interaction.pendingNewNode;
+  if (!pending) return;
+
+  const lbl = (document.getElementById("nn-lbl").value || "?").trim();
+  const ctrl = document.getElementById("nn-ctrl").value;
+  const cycle = parseInt(document.getElementById("nn-cycle")?.value) || 120;
+
   State.nodeCount++;
   State.nodes.push({
     id: State.nextId++,
-    x,
-    y,
+    x: pending.x,
+    y: pending.y,
     lbl,
     ctrl,
-    cycle: 120,
+    cycle,
     banned_turns: [],
-    lights: [],
+    lights: ctrl === "signalized" ? [] : undefined,
   });
+
+  // Normalise: uncontrolled nodes should not carry a lights array
+  const newNode = State.nodes[State.nodes.length - 1];
+  if (newNode.ctrl === "uncontrolled") delete newNode.lights;
+
+  State.interaction.pendingNewNode = null;
+  hideModal();
   saveState();
 }
 
@@ -620,7 +600,7 @@ cv.addEventListener("mousedown", (ev) => {
     State.interaction.camStartX = State.camera.x;
     State.interaction.camStartY = State.camera.y;
   } else if (State.interaction.mode === "node") {
-    if (getHoveredNode(wx, wy) === null) showNodeTypeDialog(wx, wy);
+    if (getHoveredNode(wx, wy) === null) addNode(wx, wy);
   } else if (State.interaction.mode === "road") {
     const nodeId = getHoveredNode(wx, wy);
     if (nodeId !== null) {
@@ -697,11 +677,16 @@ cv.addEventListener("mousemove", (ev) => {
             : "default";
 });
 
-cv.addEventListener("mouseup", () => {
+// Attach mouseup to document, not cv, so releasing the mouse anywhere
+// (e.g. over the density/speed sliders in the toolbar) always clears the
+// drag state. Previously, releasing outside cv left isDragging=true,
+// which caused the camera to keep panning and ate slider drag events.
+document.addEventListener("mouseup", () => {
   State.interaction.isDragging = false;
 });
 cv.addEventListener("mouseleave", () => {
-  State.interaction.isDragging = false;
+  // Do NOT clear isDragging here — the document mouseup above handles it.
+  // Clearing it on mouseleave broke panning when the cursor briefly left the canvas edge.
   State.interaction.hoverCoords = null;
 });
 

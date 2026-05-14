@@ -6,10 +6,10 @@ function spawnCars() {
 
   const dnInput = document.getElementById("dn");
   const density = dnInput ? parseInt(dnInput.value) || 50 : 50;
-  const targetCount = Math.min(
-    density * Math.max(1, State.edges.length),
-    SIM_CONFIG.MAX_CARS,
-  );
+  // S4 FIX: Old formula (density × edgeCount) hit MAX_CARS instantly on any
+  // realistic map, making the slider useless in the mid-range.  Map the slider
+  // (min=10, max=220) linearly onto [0, MAX_CARS] so every position is meaningful.
+  const targetCount = Math.round((density / 220) * SIM_CONFIG.MAX_CARS);
 
   let attempts = 0;
   while (State.cars.length < targetCount && attempts < 500) {
@@ -85,11 +85,21 @@ function handleEmergencyPreemption(node) {
 function watchdogCheck(node) {
   if (!node.ai) return;
   node.ai.watchdogAccum = node.ai.watchdogAccum || 0;
+  // S3 FIX: After redistributing phase durations the watchdog must force an
+  // all-red clearance before re-starting at phase 0.  Jumping directly to a new
+  // green phase without clearance could create a conflicting green situation.
   if (node.ai.watchdogAccum > SIM_CONFIG.WATCHDOG_TIMEOUT) {
+    console.warn(
+      `[Watchdog] Node ${node.id} (${node.lbl}) phase timer stalled — redistributing phases.`,
+    );
     const evenSplit = (node.cycle || 120) / Math.max(1, node.lights.length);
     node.lights.forEach((id) => {
       node.ai.phaseDurations[id] = evenSplit;
     });
+    // Force all-red clearance before resuming from phase 0.
+    node.activeGreenEdge = null;
+    node.ai.inAllRed = true;
+    node.ai.allRedTimer = 0;
     node.ai.watchdogAccum = 0;
     node.ai.timeInPhase = 0;
     node.ai.currentPhaseIndex = 0;
@@ -123,11 +133,33 @@ function updateTrafficLights(dt) {
       });
     }
 
+    // ── C3 FIX: Phase-queue rebuild with safe all-red fallback ─────────────────
+    // If the lights list has changed (e.g. a light was added/removed while the
+    // simulation is running), rebuild the queue.  If the currently-green edge is
+    // no longer in the new list we MUST NOT jump straight to phase 0 — that could
+    // make two conflicting approaches green simultaneously.  Instead, force an
+    // all-red clearance period first.
     if (node.ai.phaseQueue.length !== node.lights.length) {
       const currentGreen = node.ai.phaseQueue[node.ai.currentPhaseIndex];
       node.ai.phaseQueue = [...node.lights];
       const newIdx = node.ai.phaseQueue.indexOf(currentGreen);
-      node.ai.currentPhaseIndex = newIdx >= 0 ? newIdx : 0;
+      if (newIdx >= 0) {
+        // Current green is still present — resume from the same phase.
+        node.ai.currentPhaseIndex = newIdx;
+      } else {
+        // Current green was removed — enter all-red before starting phase 0.
+        node.activeGreenEdge = null;
+        node.ai.inAllRed = true;
+        node.ai.allRedTimer = 0;
+        node.ai.timeInPhase = 0;
+        node.ai.currentPhaseIndex = 0;
+      }
+      // Ensure phaseDurations has an entry for any newly-added edge.
+      const evenSplit = (node.cycle || 120) / node.lights.length;
+      node.lights.forEach((id) => {
+        if (!node.ai.phaseDurations[id]) node.ai.phaseDurations[id] = evenSplit;
+        if (!node.ai.historicalVolume[id]) node.ai.historicalVolume[id] = 1;
+      });
     }
 
     // HIDDEN: Emergency Preemption Bypass
@@ -183,12 +215,11 @@ function updateTrafficLights(dt) {
       });
 
       // 1. Keep the Historical EMA pure (just counting physical cars)
-      // FORMULA: Exponential Moving Average (EMA)
-      // V_learned = (V_historical * Decay_Factor) + (V_current * Update_Weight)
+      // S1 FIX: new-weight is derived from EWA_DECAY so they always sum to 1.0.
+      const ewaNewWeight = 1 - SIM_CONFIG.EWA_DECAY;
       node.ai.historicalVolume[nextEdgeId] =
         node.ai.historicalVolume[nextEdgeId] * SIM_CONFIG.EWA_DECAY +
-        carsWaiting * SIM_CONFIG.EWA_NEW_WEIGHT;
-
+        carsWaiting * ewaNewWeight;
       if (node.ai.historicalVolume[nextEdgeId] < SIM_CONFIG.VOLUME_FLOOR)
         node.ai.historicalVolume[nextEdgeId] = SIM_CONFIG.VOLUME_FLOOR;
 
@@ -201,9 +232,8 @@ function updateTrafficLights(dt) {
 
         let saturationWeight = 1.0;
         if (edge) {
-          const maxCapacity = edge.len / SIM_CONFIG.SAFE_GAP;
-          // FORMULA: Queue Saturation Index
-          // Saturation = Current_Vehicles / Maximum_Physical_Capacity
+          const edgeLength = edge.len || getEdgeGeometry(edge)?.length || 1;
+          const maxCapacity = edgeLength / SIM_CONFIG.SAFE_GAP;
           const currentCars =
             node.edgeStats?.[id]?.cars || (id === nextEdgeId ? carsWaiting : 0);
           const saturation = Math.min(
@@ -226,7 +256,8 @@ function updateTrafficLights(dt) {
         const speedWeight = edge ? edge.spd / 50 : 1.0;
         let saturationWeight = 1.0;
         if (edge) {
-          const maxCapacity = edge.len / SIM_CONFIG.SAFE_GAP;
+          const edgeLength = edge.len ?? getEdgeGeometry(edge)?.length ?? 1;
+          const maxCapacity = edgeLength / SIM_CONFIG.SAFE_GAP;
           const currentCars = node.edgeStats?.[id]?.cars || 0;
           const saturation = Math.min(
             1.0,
@@ -239,17 +270,19 @@ function updateTrafficLights(dt) {
         const weighted =
           (node.ai.historicalVolume[id] || SIM_CONFIG.VOLUME_FLOOR) *
           combinedWeight;
-        // FORMULA: Proportional Cycle Slicing
-        // T_green = Demand_Proportion * (Total_Cycle - Mandatory_Clearance_Times)
+
         const proportion =
           totalWeightedVolume > 0
             ? weighted / totalWeightedVolume
             : 1 / node.lights.length;
 
-        node.ai.phaseDurations[id] = Math.max(
-          SIM_CONFIG.MIN_GREEN_SEC,
+        // S2 FIX: Clamp between MIN and MAX green to prevent starvation of other
+        // approaches when one approach has overwhelming historical volume.
+        node.ai.phaseDurations[id] = clamp(
           proportion *
             ((node.cycle || 120) - SIM_CONFIG.ALL_RED_SEC * node.lights.length),
+          SIM_CONFIG.MIN_GREEN_SEC,
+          SIM_CONFIG.MAX_GREEN_SEC,
         );
         node.ai.memory[id] = node.ai.phaseDurations[id];
       });
@@ -365,50 +398,42 @@ function updateCars(dt) {
         isRedLight = true;
       }
     } else if (targetNode && targetNode.ctrl === "uncontrolled") {
-      // Check for cars already in or crossing the intersection (0.8-1.0 progress on ANY approach)
-      let carInIntersection = false;
+      let occupancy = 0;
       State.cars.forEach((c) => {
-        if (c.id !== car.id) {
+        if (c.edgeId !== edge.id && c.progress > 0.8 && c.progress < 1.0) {
           const cEdge = getEdge(c.edgeId);
           if (cEdge) {
             const cTarget = c.direction === "out" ? cEdge.to : cEdge.from;
-            // If another car is approaching or in the same intersection
-            if (cTarget === targetNodeId && c.progress > 0.7) {
-              carInIntersection = true;
-            }
+            if (cTarget === targetNodeId) occupancy++;
           }
         }
       });
-
-      // If a car is at the intersection, STOP this car (don't just slow down)
-      if (carInIntersection && distToEnd < SIM_CONFIG.STOP_LINE_DIST * 1.5) {
-        currentTargetSpeed = 0;
-        isForcedStop = true;
+      if (occupancy > 0 && distToEnd < SIM_CONFIG.STOP_LINE_DIST * 2) {
+        currentTargetSpeed = Math.min(currentTargetSpeed, 10);
       }
     }
 
-    // ──────────────────────────────────────────────────────────
-    // FIX: Pedestrian Crosswalk Clearance
-    // ──────────────────────────────────────────────────────────
-    const stopPin = 32; // mathematically guarantees 9-units of clear space before the intersection
+    // ── C2 FIX: Stop-line braking — two separate, non-overlapping cases ──────────
+    // stopPin is the distance at which the car is considered AT the stop line.
+    // It is kept as a named constant in SIM_CONFIG (STOP_PIN_DIST).
+    const stopPin = SIM_CONFIG.STOP_PIN_DIST;
 
-    // Only force braking if the car hasn't crossed the stop line yet!
-    if (
-      isRedLight &&
-      distToEnd >= stopPin &&
-      distToEnd < SIM_CONFIG.STOP_LINE_DIST
-    ) {
-      if (distToEnd <= stopPin + 0.5) {
-        car.progress = 1 - stopPin / geom.logicalLength; // Pin to the stop line
+    if (isRedLight) {
+      if (distToEnd <= stopPin) {
+        // Case 1 — car is AT or past the stop line. Hard-pin it in place.
+        // This handles any over-shoot that slipped through in a previous frame.
+        car.progress = 1 - stopPin / geom.logicalLength;
         currentTargetSpeed = 0;
         isForcedStop = true;
-      } else {
-        // FORMULA: Linear Deceleration Curve
-        // Target_Speed = Base_Speed * (Distance_Remaining / Total_Braking_Distance)
+      } else if (distToEnd < SIM_CONFIG.STOP_LINE_DIST) {
+        // Case 2 — car is in the braking zone (between STOP_LINE_DIST and stopPin).
+        // Apply proportional braking so the car slows smoothly and stops at stopPin.
         const brakeFactor =
           (distToEnd - stopPin) / (SIM_CONFIG.STOP_LINE_DIST - stopPin);
-        currentTargetSpeed *= brakeFactor;
+        currentTargetSpeed *= Math.max(0, brakeFactor);
       }
+      // Cars already beyond STOP_LINE_DIST approach at full speed until they enter
+      // the braking zone on a subsequent frame — no action needed here.
     }
 
     car.speed = Math.max(0, currentTargetSpeed);
@@ -423,8 +448,6 @@ function updateCars(dt) {
     }
 
     if (!car.isStopped && !isForcedStop) {
-      // FORMULA: Kinematic Integration (Euler Method)
-      // ΔProgress = (Velocity * ΔTime) / Logical_Road_Length
       car.progress += (car.speed * dt) / geom.logicalLength;
 
       // Prevent creeping past the line if light is red (only if they are behind it)
