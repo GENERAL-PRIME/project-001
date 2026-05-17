@@ -1,0 +1,347 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "x": 102.0511558941447,
+      "y": 188.81934486893573,
+      "lbl": "A",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        15
+      ],
+      "throughput": 38,
+      "totalWait": 0
+    },
+    {
+      "id": 2,
+      "x": 341.42365589414453,
+      "y": 209.97934486893573,
+      "lbl": "B",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        15,
+        16
+      ],
+      "throughput": 100,
+      "totalWait": 2987.679999999786
+    },
+    {
+      "id": 3,
+      "x": 627.0836558941444,
+      "y": 180.88434486893573,
+      "lbl": "C",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        16,
+        17
+      ],
+      "throughput": 103,
+      "totalWait": 442.2879999999779
+    },
+    {
+      "id": 4,
+      "x": 892.9061558941441,
+      "y": 149.14434486893578,
+      "lbl": "D",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        17,
+        18
+      ],
+      "throughput": 94,
+      "totalWait": 281.18399999998053
+    },
+    {
+      "id": 5,
+      "x": 1162.696155894144,
+      "y": 161.04684486893575,
+      "lbl": "E",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        18,
+        19,
+        27
+      ],
+      "throughput": 109,
+      "totalWait": 3031.247999999961
+    },
+    {
+      "id": 6,
+      "x": 1318.685030894144,
+      "y": 402.93209486893556,
+      "lbl": "F",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 72,
+      "totalWait": 4.464000000000003
+    },
+    {
+      "id": 7,
+      "x": 1396.2496558941439,
+      "y": 599.1249698689354,
+      "lbl": "G",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 41,
+      "totalWait": 1.0720000000000005
+    },
+    {
+      "id": 8,
+      "x": 1511.8361558941438,
+      "y": 145.90421986893577,
+      "lbl": "H",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        19,
+        20
+      ],
+      "throughput": 67,
+      "totalWait": 472.6079999999731
+    },
+    {
+      "id": 9,
+      "x": 1803.8441558941436,
+      "y": 159.59209486893576,
+      "lbl": "I",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        20,
+        21
+      ],
+      "throughput": 77,
+      "totalWait": 765.1519999999529
+    },
+    {
+      "id": 10,
+      "x": 2093.563239019143,
+      "y": 151.20827143143572,
+      "lbl": "J",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        21,
+        22
+      ],
+      "throughput": 58,
+      "totalWait": 487.59999999998087
+    },
+    {
+      "id": 11,
+      "x": 2445.5507468316428,
+      "y": 163.27641455643572,
+      "lbl": "K",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        22,
+        23,
+        24
+      ],
+      "throughput": 59,
+      "totalWait": 628.9759999999775
+    },
+    {
+      "id": 12,
+      "x": 2375.1532452691426,
+      "y": 388.54841955643553,
+      "lbl": "L",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        24,
+        25
+      ],
+      "throughput": 38,
+      "totalWait": 3.7120000000000024
+    },
+    {
+      "id": 13,
+      "x": 2542.095891831643,
+      "y": -68.02966200606409,
+      "lbl": "M",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 33,
+      "totalWait": 1.568000000000001
+    },
+    {
+      "id": 14,
+      "x": 2210.221955894143,
+      "y": 581.6387095564353,
+      "lbl": "N",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        25
+      ],
+      "throughput": 35,
+      "totalWait": 1.2960000000000007
+    },
+    {
+      "id": 26,
+      "x": 1560.5535843316434,
+      "y": 587.6727811189353,
+      "lbl": "O",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 37,
+      "totalWait": 1.8240000000000012
+    }
+  ],
+  "edges": [
+    {
+      "id": 15,
+      "from": 1,
+      "to": 2,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 240
+    },
+    {
+      "id": 16,
+      "from": 2,
+      "to": 3,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 287
+    },
+    {
+      "id": 17,
+      "from": 3,
+      "to": 4,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 268
+    },
+    {
+      "id": 18,
+      "from": 4,
+      "to": 5,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 270
+    },
+    {
+      "id": 19,
+      "from": 5,
+      "to": 8,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 349
+    },
+    {
+      "id": 20,
+      "from": 8,
+      "to": 9,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 292
+    },
+    {
+      "id": 21,
+      "from": 9,
+      "to": 10,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 290
+    },
+    {
+      "id": 22,
+      "from": 10,
+      "to": 11,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 352
+    },
+    {
+      "id": 23,
+      "from": 11,
+      "to": 13,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 251
+    },
+    {
+      "id": 24,
+      "from": 11,
+      "to": 12,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 236
+    },
+    {
+      "id": 25,
+      "from": 12,
+      "to": 14,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 254
+    },
+    {
+      "id": 27,
+      "from": 5,
+      "to": 6,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 288
+    },
+    {
+      "id": 28,
+      "from": 6,
+      "to": 7,
+      "out": 1,
+      "inl": 1,
+      "spd": 50,
+      "len": 211
+    },
+    {
+      "id": 29,
+      "from": 6,
+      "to": 26,
+      "out": 1,
+      "inl": 1,
+      "spd": 50,
+      "len": 304
+    }
+  ],
+  "nextId": 246,
+  "nodeCount": 15
+}
