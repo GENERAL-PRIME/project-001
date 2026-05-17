@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficGraph v6</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="tf">
+    <div id="tfbar">
+      <span class="logo">TRAFFICGRAPH</span>
+      <div class="sp"></div>
+
+      <!-- ─── AREA SELECTOR ──────────────────────────────────────────────── -->
+      <div style="display:flex; align-items:center; gap:5px;">
+        <span style="font-size:10px; color:var(--color-text-secondary); letter-spacing:0.5px;">AREA</span>
+        <select id="area-select" onchange="switchArea(this.value)" style="background:var(--color-background-secondary); border:1px solid var(--color-border-secondary);
+                 color:var(--color-text-primary); padding:3px 6px; font:inherit; font-size:11px;
+                 border-radius:4px; cursor:pointer; outline:none; max-width:120px;">
+        </select>
+        <button class="tb" onclick="promptNewArea()" title="New area">+</button>
+        <button class="tb" onclick="promptRenameArea()" title="Rename area">✎</button>
+        <button class="tb d" onclick="deleteArea(typeof ActiveAreaId !== 'undefined' ? ActiveAreaId : '')"
+          title="Delete area">✕</button>
+      </div>
+
+      <div class="sp"></div>
+
+      <!-- ─── PORTAL MANAGER ────────────────────────────────────────────── -->
+      <button class="tb" onclick="openPortalManager()" title="Manage inter-area portals"
+        style="border-color:#a855f7; color:#a855f7; position:relative;">
+        ⇄ PORTALS
+        <span id="portal-count" style="position:absolute; top:-5px; right:-5px; background:#a855f7; color:#fff;
+                 font-size:9px; border-radius:8px; padding:0 4px; min-width:14px; text-align:center;
+                 display:inline-block; line-height:14px;"></span>
+      </button>
+
+      <div class="sp"></div>
+
+      <button class="tb on" id="m-pan" onclick="setMode('pan')">PAN</button>
+      <button class="tb" id="m-sel" onclick="setMode('sel')">SELECT</button>
+      <button class="tb" id="m-node" onclick="setMode('node')">+ NODE</button>
+      <button class="tb" id="m-road" onclick="setMode('road')">+ ROAD</button>
+      <button class="tb d" id="m-del" onclick="setMode('del')">DELETE</button>
+
+      <div class="sp"></div>
+      <button id="sb" onclick="toggleSim()">▶ SIMULATE</button>
+
+      <div class="sp"></div>
+      <label style="font-size:10px; color:var(--color-text-secondary)">DENSITY
+        <input type="range" id="dn" min="10" max="220" value="50"
+          style="width:60px; margin-left:6px; vertical-align:middle">
+      </label>
+      <label style="font-size:10px; color:var(--color-text-secondary); margin-left:12px;">SPEED
+        <input type="range" id="sim-speed" min="0.1" max="4.0" step="0.1" value="1.0"
+          style="width:60px; margin-left:6px; vertical-align:middle">
+      </label>
+
+      <div class="sp" style="flex:1"></div>
+
+      <div id="metrics-panel"
+        style="display:flex; gap:16px; font-size:11px; color:var(--color-text-primary); background:rgba(0,0,0,0.4); padding:4px 12px; border-radius:4px; border:1px solid var(--color-border-secondary);">
+        <div>🕐 Sim time: <b>0s</b></div>
+        <div>🚗 Throughput: <b>0</b> cars</div>
+        <div>⏱ Avg wait: <b>0.0s</b></div>
+      </div>
+
+      <div class="sp" style="flex:1"></div>
+
+      <button class="tb" onclick="exportMap()">EXPORT</button>
+      <button class="tb" onclick="document.getElementById('file-import').click()">IMPORT</button>
+      <input type="file" id="file-import" style="display:none" accept=".json" onchange="importMap(event)">
+      <button class="tb" onclick="loadSample()">SAMPLE MAP</button>
+      <button class="tb d" onclick="clearAll()">CLEAR</button>
+    </div>
+
+    <div id="wp">
+      <canvas id="cv"></canvas>
+
+      <div id="pn">
+        <h4 id="pt">INTERSECTION</h4>
+        <div id="pc"></div>
+      </div>
+
+      <div id="ht">Click SAMPLE MAP to load a demo · or use the toolbar to build your own</div>
+
+      <div id="lg">
+        <div class="li">
+          <div class="lc" style="background:#30d870"></div>outgoing
+        </div>
+        <div class="li">
+          <div class="lc" style="background:#ff6535"></div>incoming
+        </div>
+        <div class="li">
+          <div class="lc" style="background:#2ec4e8;border-radius:50%;width:10px;height:10px"></div>intersection
+        </div>
+        <div class="li">
+          <div class="lc" style="background:#ff9900"></div>all-red
+        </div>
+        <div class="li">
+          <div class="lc" style="background:#a855f7;border-radius:50%;width:10px;height:10px"></div>portal
+        </div>
+      </div>
+
+      <div id="mo">
+        <div id="mb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load order: utils → areas → state → math → simulation → render → main -->
+  <script src="utils.js"></script>
+  <script src="areas.js"></script>
+  <script src="state.js"></script>
+  <script src="math.js"></script>
+  <script src="simulation.js"></script>
+  <script src="render.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

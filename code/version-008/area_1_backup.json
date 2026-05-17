@@ -1,0 +1,488 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "x": -26.5,
+      "y": -55,
+      "lbl": "A",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        19,
+        20,
+        42,
+        19879
+      ],
+      "throughput": 2575,
+      "totalWait": 115123.64799999855
+    },
+    {
+      "id": 2,
+      "x": 213.8175,
+      "y": -56.22749999999999,
+      "lbl": "B",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 19,
+          "to": 2375
+        },
+        {
+          "from": 22,
+          "to": 2375
+        }
+      ],
+      "lights": [
+        19,
+        22
+      ],
+      "throughput": 2195,
+      "totalWait": 24754.639999998573
+    },
+    {
+      "id": 3,
+      "x": -253.02499999999995,
+      "y": -50.9375,
+      "lbl": "C",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 1685,
+      "totalWait": 681.8400000000004
+    },
+    {
+      "id": 5,
+      "x": -159.12749999999994,
+      "y": 249.26999999999998,
+      "lbl": "E",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 30,
+          "to": 36
+        }
+      ],
+      "lights": [
+        31
+      ],
+      "throughput": 2604,
+      "totalWait": 20675.839999998985
+    },
+    {
+      "id": 6,
+      "x": -406.43499999999995,
+      "y": 257.2049999999999,
+      "lbl": "F",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        31,
+        32
+      ],
+      "throughput": 2190,
+      "totalWait": 42645.77599999761
+    },
+    {
+      "id": 7,
+      "x": -623.3249999999998,
+      "y": 267.78499999999997,
+      "lbl": "G",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 33,
+          "to": 11104
+        }
+      ],
+      "lights": [
+        32,
+        11104
+      ],
+      "throughput": 2314,
+      "totalWait": 7319.807999999603
+    },
+    {
+      "id": 8,
+      "x": -476.5274999999999,
+      "y": -58.8725,
+      "lbl": "H",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 1774,
+      "totalWait": 967.4080000000004
+    },
+    {
+      "id": 9,
+      "x": 428.0625,
+      "y": -54.905,
+      "lbl": "I",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "throughput": 1674,
+      "totalWait": 9145.215999999784
+    },
+    {
+      "id": 10,
+      "x": 231.00999999999996,
+      "y": 249.26999999999998,
+      "lbl": "J",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [
+        {
+          "from": 36,
+          "to": 2375
+        },
+        {
+          "from": 37,
+          "to": 2375
+        }
+      ],
+      "lights": [
+        36,
+        37
+      ],
+      "throughput": 1531,
+      "totalWait": 22317.647999998688
+    },
+    {
+      "id": 11,
+      "x": 662.145,
+      "y": 243.97999999999996,
+      "lbl": "K",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        23,
+        37,
+        41
+      ],
+      "throughput": 1603,
+      "totalWait": 37164.81599999907
+    },
+    {
+      "id": 12,
+      "x": -8.362499999999983,
+      "y": -261.215,
+      "lbl": "L",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [
+        27,
+        34,
+        35,
+        42
+      ],
+      "throughput": 2151,
+      "totalWait": 39934.55999999869
+    },
+    {
+      "id": 13,
+      "x": 231.00999999999996,
+      "y": -269.15,
+      "lbl": "M",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "throughput": 1436,
+      "totalWait": 1210.6080000000013
+    },
+    {
+      "id": 14,
+      "x": 467.7374999999999,
+      "y": -270.47249999999997,
+      "lbl": "N",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "throughput": 991,
+      "totalWait": 153.824
+    },
+    {
+      "id": 15,
+      "x": -264.92749999999995,
+      "y": -262.53749999999997,
+      "lbl": "O",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 852,
+      "totalWait": 211.59999999999994
+    },
+    {
+      "id": 16,
+      "x": 6.1850000000000165,
+      "y": -455.62249999999995,
+      "lbl": "P",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 916,
+      "totalWait": 58.751999999999974
+    },
+    {
+      "id": 17,
+      "x": -262.28249999999997,
+      "y": -458.2675,
+      "lbl": "Q",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 909,
+      "totalWait": 351.67999999999967
+    },
+    {
+      "id": 18,
+      "x": 577.3065175468747,
+      "y": -544.4546431562499,
+      "lbl": "R",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 952,
+      "totalWait": 44.60799999999997
+    },
+    {
+      "id": 40,
+      "x": 881.0096975264453,
+      "y": 255.0276908524998,
+      "lbl": "T",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 846,
+      "totalWait": 38.51199999999999
+    },
+    {
+      "id": 11103,
+      "x": -915.9057986352922,
+      "y": 265.9321646152089,
+      "lbl": "U",
+      "ctrl": "signalized",
+      "cycle": 120,
+      "banned_turns": [],
+      "lights": [],
+      "throughput": 763,
+      "totalWait": 24.912000000000003
+    },
+    {
+      "id": 19867,
+      "x": -61.599274636311236,
+      "y": 92.62971423728119,
+      "lbl": "W",
+      "ctrl": "uncontrolled",
+      "cycle": 120,
+      "banned_turns": [],
+      "throughput": 42,
+      "totalWait": 0.6080000000000003
+    }
+  ],
+  "edges": [
+    {
+      "id": 19,
+      "from": 1,
+      "to": 2,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 20,
+      "from": 3,
+      "to": 1,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 21,
+      "from": 8,
+      "to": 3,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 22,
+      "from": 2,
+      "to": 9,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 23,
+      "from": 9,
+      "to": 11,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 24,
+      "from": 9,
+      "to": 14,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 25,
+      "from": 14,
+      "to": 18,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 26,
+      "from": 2,
+      "to": 13,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 27,
+      "from": 12,
+      "to": 13,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 31,
+      "from": 6,
+      "to": 5,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 32,
+      "from": 7,
+      "to": 6,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 33,
+      "from": 7,
+      "to": 8,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 34,
+      "from": 15,
+      "to": 12,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 35,
+      "from": 12,
+      "to": 16,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 36,
+      "from": 5,
+      "to": 10,
+      "out": 2,
+      "inl": 2,
+      "spd": 40,
+      "len": 500
+    },
+    {
+      "id": 37,
+      "from": 10,
+      "to": 11,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 38,
+      "from": 17,
+      "to": 16,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 41,
+      "from": 11,
+      "to": 40,
+      "out": 2,
+      "inl": 2,
+      "spd": 40
+    },
+    {
+      "id": 42,
+      "from": 12,
+      "to": 1,
+      "out": 2,
+      "inl": 2,
+      "spd": 40,
+      "len": 210
+    },
+    {
+      "id": 2375,
+      "from": 2,
+      "to": 10,
+      "out": 1,
+      "inl": 1,
+      "spd": 25
+    },
+    {
+      "id": 11104,
+      "from": 7,
+      "to": 11103,
+      "out": 2,
+      "inl": 2,
+      "spd": 50
+    },
+    {
+      "id": 19875,
+      "from": 5,
+      "to": 19867,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 185
+    },
+    {
+      "id": 19879,
+      "from": 19867,
+      "to": 1,
+      "out": 2,
+      "inl": 2,
+      "spd": 50,
+      "len": 152
+    }
+  ],
+  "nextId": 19985,
+  "nodeCount": 27
+}
